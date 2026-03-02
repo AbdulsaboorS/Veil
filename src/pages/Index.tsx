@@ -10,7 +10,7 @@ import { useSidePanel } from '@/hooks/useSidePanel';
 import { useEpisodeRecap } from '@/hooks/useEpisodeRecap';
 import { useSessionStore } from '@/hooks/useSessionStore';
 import { useInitFlow } from '@/hooks/useInitFlow';
-import { WatchSetup, ResponseStyle, RefinementOption } from '@/lib/types';
+import { WatchSetup } from '@/lib/types';
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { Loader2 } from 'lucide-react';
 
@@ -83,25 +83,38 @@ function SidePanelApp() {
   const { phase, isDetecting, confirmManualSetup, requestRedetect } = useInitFlow(sessionStore);
   const { isLoading: isLoadingRecap } = useEpisodeRecap();
 
+  // Warm-ping: fire both edge functions as soon as the panel opens so they're
+  // hot by the time the user asks their first question.
+  useEffect(() => {
+    const base = import.meta.env.VITE_SUPABASE_URL;
+    const auth = `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`;
+    const ping = (path: string) =>
+      fetch(`${base}/functions/v1/${path}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': auth },
+        body: JSON.stringify({ ping: true }),
+      }).catch(() => {});
+    ping('spoiler-shield-chat');
+    ping('classify-question');
+  }, []);
+
   const messagesKey = sessionStore.activeSession
     ? sessionStore.getMessagesKey(sessionStore.activeSession.meta.sessionId)
     : undefined;
 
-  const { messages, isLoading, error, sendMessage, refineLastAnswer, clearChat, setError } =
+  const { messages, isLoading, error, sendMessage, clearChat } =
     useChat(messagesKey);
 
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [question, setQuestion] = useState('');
-  const [style, setStyle] = useState<ResponseStyle>('quick');
   const qaHistoryRef = useRef<HTMLDivElement>(null);
 
   const meta = sessionStore.activeSession?.meta ?? null;
 
-  const lastAssistantMessage = useMemo(
-    () => messages.slice().reverse().find((m) => m.role === 'assistant'),
+  const hasAnswer = useMemo(
+    () => messages.some(m => m.role === 'assistant' && m.content?.trim()),
     [messages]
   );
-  const hasAnswer = Boolean(lastAssistantMessage?.content?.trim());
 
   // Auto-scroll when messages change
   useEffect(() => {
@@ -135,7 +148,7 @@ function SidePanelApp() {
   const handleSubmitQuestion = (e: React.FormEvent) => {
     e.preventDefault();
     if (!question.trim() || isLoading) return;
-    sendMessage(question.trim(), watchSetup, style);
+    sendMessage(question.trim(), watchSetup);
     setQuestion('');
     setTimeout(() => {
       qaHistoryRef.current?.scrollTo({
@@ -241,7 +254,6 @@ function SidePanelApp() {
               isLoading={isLoading}
               error={error}
               question={question}
-              style={style}
               hasAnswer={hasAnswer}
               meta={meta}
               isLoadingRecap={isLoadingRecap}
@@ -249,7 +261,7 @@ function SidePanelApp() {
               qaHistoryRef={qaHistoryRef}
               onQuestionChange={setQuestion}
               onSubmit={handleSubmitQuestion}
-              onStyleSelect={setStyle}
+              onClearChat={handleClearChat}
             />
           )}
 
@@ -274,14 +286,10 @@ function SidePanelApp() {
 
 function WebApp() {
   const [watchSetup, setWatchSetup] = useLocalStorage<WatchSetup>('spoilershield-setup', defaultSetup);
-  const { messages, isLoading, error, sendMessage, refineLastAnswer } = useChat();
+  const { messages, isLoading, error, sendMessage } = useChat();
 
-  const handleSendMessage = (message: string, style: ResponseStyle) => {
-    sendMessage(message, watchSetup, style);
-  };
-
-  const handleRefine = (refinement: RefinementOption) => {
-    refineLastAnswer(refinement, watchSetup);
+  const handleSendMessage = (message: string) => {
+    sendMessage(message, watchSetup);
   };
 
   return (
@@ -301,7 +309,6 @@ function WebApp() {
             isLoading={isLoading}
             error={error}
             onSendMessage={handleSendMessage}
-            onRefine={handleRefine}
             watchSetup={watchSetup}
           />
         </div>

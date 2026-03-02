@@ -70,16 +70,8 @@ Rules for SPOILER_RISK:
 - Bad: "I can't tell you about the traitor yet!" (reveals there IS a traitor)
 - Bad: "You'll find out soon!" (implies something is coming)
 
-RESPONSE STYLE:
-- "Quick" style: 1-2 sentences, direct answer
-- "Explain" style: Clear explanation with context, 2-4 sentences
-- "Lore" style: Background/world-building focus, still spoiler-safe, 2-4 sentences`;
-
-const styleInstructions: Record<string, string> = {
-  quick: "Respond in 1-2 sentences. Be direct and concise.",
-  explain: "Provide a clear explanation in 2-4 sentences with helpful context.",
-  lore: "Focus on world-building and background information in 2-4 sentences, staying spoiler-safe.",
-};
+RESPONSE LENGTH:
+Calibrate your length to the question — simple factual questions get 1-2 sentences, nuanced questions get 2-4 sentences. Never pad answers unnecessarily.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -89,7 +81,16 @@ serve(async (req) => {
   const debugInfo: Record<string, unknown> = { step: "entry", model: GEMINI_MODEL, url: GEMINI_URL };
 
   try {
-    const { question, context, style, showInfo } = await req.json();
+    const body = await req.json();
+
+    // Warm-ping: short-circuit before any Gemini call
+    if (body.ping) {
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { question, context, showInfo } = body;
     debugInfo.step = "parsed";
     debugInfo.hasQuestion = !!question;
     debugInfo.hasContext = !!context;
@@ -125,9 +126,6 @@ IMPORTANT CLASSIFICATION GUIDANCE:
 - If the question is AMBIGUOUS (unclear scene reference), ask for clarification.
 - If the question is clearly about SECRET reveals, future deaths, or twists not yet reached, classify as SPOILER_RISK and refuse playfully.
 - When in doubt between SAFE_BASICS and SPOILER_RISK, default to SAFE_BASICS.
-
-Current response style: ${(style || "quick").toUpperCase()}
-${styleInstructions[style || "quick"]}
 
 USER'S QUESTION:
 ${question}`;
