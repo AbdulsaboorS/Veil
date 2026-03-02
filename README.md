@@ -1,142 +1,141 @@
-# SpoilerShield (WIP)  
-*A spoiler-safe Q&A side panel for anime & TV*
+# spoilershield
 
-SpoilerShield helps people ask questions while watching a show **without getting spoiled**. This project treats safety as a first-class product constraint, not an afterthought.
+*A spoiler-safe Q&A side panel for anime & TV — built as a Chrome extension.*
 
-The core insight: people get confused mid-episode, but Googling anything risks spoilers. SpoilerShield lives alongside the video player and answers questions using only what the viewer has already seen. This is designed for people watching narrative-heavy content (anime, dramas) who want clarity without losing the experience.
+SpoilerShield lets you ask questions while watching a show without getting spoiled. It lives in Chrome's side panel alongside the video player, detects what you're watching automatically, and answers questions using only what you've already seen.
 
-I’m building SpoilerShield end to end, including product design, frontend, extension UX, backend services, and AI system design.
-
+Built end-to-end: product design, extension UX, React frontend, AI pipeline, and Supabase Edge Functions.
 
 ---
 
-## What SpoilerShield does (today)
+## How it works
 
-### 🧠 Core idea
-Answer questions *without* revealing:
-- future plot points
-- character reveals
-- foreshadowing
-- hindsight explanations
+1. **Open Crunchyroll or Netflix** — the extension detects your show and episode automatically. No setup required.
+2. **Ask anything in the panel** — who's that character, what just happened, what's this power?
+3. **Get a spoiler-safe answer** — the shield knows exactly where you are in the story. It answers what's safe and refuses what isn't, playfully.
 
-If an answer can’t be given safely, the system asks for more context or refuses in a user-friendly way.
+The experience is fully automated. The only thing you need to do is ask.
 
 ---
 
-### 🧩 Current MVP surfaces
+## What's working
 
-#### 1. Web app (Lovable-deployed)
+### Extension
+- **Auto-detection** — detects show title and episode from Crunchyroll and Netflix URLs/DOM. Re-detects automatically when you navigate to a different show.
+- **Chat-first side panel** — panel opens directly to chat, no wizard or setup flow. Sessions are per show + episode and persist across browser restarts.
+- **Session history** — left-side drawer to switch between or delete past sessions.
+- **Warm-ping on open** — both edge functions are pinged the moment the panel loads, eliminating cold-start latency on the first question.
 
-- Chat interface for spoiler-safe Q&A
-- Guided setup: detect show → confirm progress → ask questions
-- Spoiler-safety rules baked into prompts and audits
+### AI pipeline
+- **Question classification** — each question is classified as `SAFE_BASICS`, `AMBIGUOUS`, or `SPOILER_RISK` in parallel with the chat fetch (no sequential latency penalty).
+- **Safe path** — real SSE streaming directly to the UI. First tokens appear within ~500ms on warm functions.
+- **Spoiler-risk path** — response is collected silently, audited by a second-pass LLM, then animated in via fake-stream. No spoilers leak.
+- **Four-tier context pipeline** — TVMaze episode summaries → Fandom wiki (JJK S1) → Gemini web search grounding → model knowledge fallback. All recap text is sanitized before use.
 
-## Live preview (WIP)
-
-Web app (Lovable deploy):  
-https://spoilershield.lovable.app/
-
-> Note: This deployment is intentionally a work in progress. Some flows are incomplete or unstable by design.
-  
-
-#### 2. Chrome Side Panel Extension (primary UX)
-- Opens SpoilerShield next to the video player
-- Attempts to detect what the user is watching (Crunchyroll first)
-- Prefills show context when possible
-- Always allows manual correction
-
-This side-panel flow is the **intended long-term UX**, not the standalone web app.
+### UI
+- Deep space dark palette (`#0D0D14` base, `#7C6FF7` soft violet accent)
+- iMessage-style chat bubbles with spring pop animation on new messages
+- Glassmorphism header with inline SVG shield logo (breathing sparkle animation)
+- Pill input with integrated send button and focus glow
+- Typing indicator dots while waiting for first streaming chunk
+- Space Grotesk brand font + DM Sans body
 
 ---
 
-## What works locally
+## Tech stack
 
-- Side panel opens reliably
-- Show detection + confirmation flow works for supported pages
-- Spoiler-safe refusal logic is in place
-- Backend architecture for:
-  - context fetching
-  - sanitization
-  - answer generation
-  - second-pass spoiler audit
-
----
-
-## What is intentionally WIP / broken
-
-These are the current limitations I’m actively iterating on.
-
-- **Answer quality tuning**
-  - The model is currently too conservative for “safe basics”
-  - Actively iterating on SAFE vs SPOILER-RISK classification
-- **Context sourcing**
-  - Episode-level wiki parsing is experimental
-  - Only validated on a small anime subset
-- **Deploy consistency**
-  - Some Supabase Edge Functions are still being stabilized
-  - “Failed to fetch” can occur depending on environment
+| Layer | Technology |
+|---|---|
+| Extension | Chrome MV3, Manifest V3, content scripts |
+| Frontend | React 18, Vite, TypeScript, Tailwind CSS, shadcn/ui |
+| Backend | Supabase Edge Functions (Deno) |
+| AI | Google Gemini API (`gemini-3-flash-preview`) — native, not OpenAI-compatible |
+| Storage | `localStorage` (sessions + messages, no server-side user data) |
 
 ---
 
-## What I’m actively working on next
+## Repo structure
 
-1. Improving “safe basics” answers  
-   (e.g., *“Who is (MAIN CHARACTER)?” should never be blocked*)
-2. Making spoiler refusals more human and fun  
-   (not robotic safety language)
-3. Tightening environment + deployment reliability
-4. Expanding show coverage beyond the MVP anime set
+```
+spoiler-shield/
+├── extension/
+│   ├── background.js          # Service worker: opens side panel, injects content.js
+│   ├── content.js             # Page detection (show title + episode from DOM/URL)
+│   └── sidepanel.js           # postMessage bridge between extension and React app
+├── src/
+│   ├── pages/Index.tsx        # Root: branches on isSidePanel → SidePanelApp | WebApp
+│   ├── hooks/
+│   │   ├── useChat.ts         # Chat API, streaming, parallel classify fetch, warm-ping
+│   │   ├── useSessionStore.ts # Session CRUD, localStorage, migration
+│   │   ├── useInitFlow.ts     # Init state machine: detecting → resolving → ready
+│   │   └── useEpisodeRecap.ts # Four-tier context pipeline
+│   └── components/
+│       ├── Header.tsx         # Glassmorphism header + shield logo
+│       ├── StatusBadge.tsx    # Show/episode pill + settings popover
+│       ├── ChatStatusBar.tsx  # Shielding status between messages and input
+│       ├── HistorySheet.tsx   # Session history drawer
+│       └── steps/QAStep.tsx  # iMessage chat bubbles + pill input
+└── supabase/functions/
+    ├── spoiler-shield-chat/   # Main Q&A endpoint (Gemini SSE streaming)
+    ├── classify-question/     # Spoiler risk classifier (YES/NO, parallel with chat)
+    ├── audit-answer/          # Second-pass spoiler audit for risky answers
+    ├── fetch-web-episode-recap/   # Gemini Search Grounding — universal recap
+    ├── fetch-fandom-episode/      # JJK S1 Fandom wiki fetch + parse
+    └── sanitize-episode-context/  # Strips future spoilers from any recap text
+```
 
 ---
 
-## Repo structure (high level)
+## Local development
 
-src/ → Web app (React / Vite)
-extension/ → Chrome Side Panel Extension (Manifest V3)
-supabase/functions/ → Edge Functions (chat, audit, context)
+### Prerequisites
+- Node.js 18+
+- A Supabase project with `GOOGLE_AI_API_KEY` set as a secret
+- `.env.local` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`
 
----
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-
-## Dev: Side Panel Extension
-
-This repo includes a Chrome Extension (Manifest V3) in `/extension` that opens SpoilerShield in a Chrome Side Panel and tries to prefill the **Context** box using a rolling subtitle buffer from Crunchyroll/Netflix pages.
-
-### Run the web app locally
-
-```sh
-npm i
+### Run the web app
+```bash
+npm install
 npm run dev
 ```
 
-By default the extension iframe points to `http://localhost:5173` (see `extension/sidepanel.js`).
+### Build the extension bundle
+```bash
+npm run build:ext
+```
+Outputs to `extension/app/assets/index.js` — what Chrome actually loads.
 
-### Load the extension (unpacked)
-
-1. Open Chrome → `chrome://extensions`
+### Load the extension in Chrome
+1. Go to `chrome://extensions`
 2. Enable **Developer mode**
-3. Click **Load unpacked**
-4. Select the folder: `YOUR_REPO_PATH/extension`
+3. Click **Load unpacked** → select the `extension/` folder
+4. After any code change, run `npm run build:ext` and click **Reload** on the extension
 
-### Use it
+### Deploy edge functions
+```bash
+supabase login
+supabase link --project-ref <your-project-ref>
+supabase functions deploy spoiler-shield-chat
+supabase functions deploy classify-question
+supabase functions deploy audit-answer
+supabase functions deploy fetch-web-episode-recap
+supabase functions deploy sanitize-episode-context
+```
 
-1. Open a Crunchyroll or Netflix playback tab (subtitle capture is heuristic-based).
-2. Click the extension icon.
-3. A side panel opens with the SpoilerShield web app.
-4. The extension posts `SPOILERSHIELD_PREFILL` into the iframe to prefill Watch Setup + Context.
-5. If subtitles can’t be captured, it sends an empty context; the app should prompt you gently for the last line.
+---
 
-### Config
+## Supported platforms
 
-- **Web app URL**: `extension/sidepanel.js` → `WEB_APP_URL`
-- **MVP token**: hardcoded shared secret `"spoilershield-mvp-1"` in both the extension and the web app. (This is only a basic safeguard against random `postMessage` injection.)
+| Platform | Detection | Status |
+|---|---|---|
+| Crunchyroll | URL + DOM | ✅ Working |
+| Netflix | URL + DOM | ✅ Working |
+
+---
+
+## Upcoming
+
+- Publish to Chrome Web Store
+- Timestamp-aware answers (knowing exactly what scene you're at mid-episode)
+- Broader platform support
+- Re-enable second-pass audit for spoiler-risk answers
