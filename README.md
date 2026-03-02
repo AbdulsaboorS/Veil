@@ -86,50 +86,11 @@ spoiler-shield/
 
 ---
 
-## Local development
-
-### Prerequisites
-- Node.js 18+
-- A Supabase project with `GOOGLE_AI_API_KEY` set as a secret
-- `.env.local` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`
-
-### Run the web app
-```bash
-npm install
-npm run dev
-```
-
-### Build the extension bundle
-```bash
-npm run build:ext
-```
-Outputs to `extension/app/assets/index.js` — what Chrome actually loads.
-
-### Load the extension in Chrome
-1. Go to `chrome://extensions`
-2. Enable **Developer mode**
-3. Click **Load unpacked** → select the `extension/` folder
-4. After any code change, run `npm run build:ext` and click **Reload** on the extension
-
-### Deploy edge functions
-```bash
-supabase login
-supabase link --project-ref <your-project-ref>
-supabase functions deploy spoiler-shield-chat
-supabase functions deploy classify-question
-supabase functions deploy audit-answer
-supabase functions deploy fetch-web-episode-recap
-supabase functions deploy sanitize-episode-context
-```
-
----
-
 ## Supported platforms
 
 | Platform | Detection | Status |
 |---|---|---|
 | Crunchyroll | URL + DOM | ✅ Working |
-| Netflix | URL + DOM | ✅ Working |
 
 ---
 
