@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+/* ── Design tokens ──────────────────────────────────────────────── */
+@theme {
+  /* Colors */
+  --color-bg:             #0D0D14;
+  --color-surface:        #13131C;
+  --color-elevated:       #1C1B2A;
+  --color-border:         #2A2840;
+  --color-accent:         #7C6FF7;
+  --color-accent-light:   #A78BFA;
+  --color-text-primary:   #EEEDF8;
+  --color-text-secondary: #8E8AA8;
+  --color-text-muted:     #54516A;
+
+  /* Fonts — variables injected by next/font in layout.tsx */
+  --font-sans:  var(--font-dm-sans),         system-ui, sans-serif;
+  --font-brand: var(--font-space-grotesk),   system-ui, sans-serif;
+
+  /* Animations */
+  --animate-float:   float   4s ease-in-out infinite;
+  --animate-breathe: breathe 3s ease-in-out infinite;
+  --animate-fade-up: fade-up 0.6s ease-out forwards;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px);  }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.5; transform: scale(1);    }
+  50%       { opacity: 1;   transform: scale(1.25); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* ── Base ───────────────────────────────────────────────────────── */
+html  { scroll-behavior: smooth; }
+
+body {
+  background: #0D0D14;
+  color:      #EEEDF8;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(124, 111, 247, 0.3);
+  color:      #EEEDF8;
+}
+
+::-webkit-scrollbar       { width: 5px; }
+::-webkit-scrollbar-track { background: #13131C; }
+::-webkit-scrollbar-thumb { background: #2A2840; border-radius: 3px; }
