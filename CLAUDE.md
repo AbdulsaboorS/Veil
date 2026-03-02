@@ -115,10 +115,11 @@ No active bugs. All previously known issues are resolved.
 
 ## 7. Upcoming Work (Prioritized)
 
-1. **Re-enable audit pass** – Wire `audit-answer` in `useChat.ts` after streaming; show "Safety edit applied" when answer is modified. Remove the empty-context 400 guard in `audit-answer/index.ts` first (same fix applied to chat on 2026-02-23).
-2. **Detection robustness** – More reliable DOM/URL detection across Crunchyroll/Netflix layout updates.
-3. **Polish StatusBadge popover** – Show names truncate at 18 chars in badge; full name visible in popover.
-4. **`needs-episode` with no showId** – If TVMaze lookup fails entirely, `EpisodePicker` can't render (requires showId). Fallback: show manual season/episode text inputs.
+1. **Netflix detection** – Get `content.js` reliably reading show title + episode from Netflix URLs/DOM. Smoke test full flow (detection → chat → spoiler safety). Once confirmed, update README + landing page to list Netflix as supported. Then submit to Chrome Web Store.
+2. **Chrome Web Store submission** – Prep store listing (description, screenshots, privacy policy). Netflix support should be confirmed first.
+3. **Re-enable audit pass** – Wire `audit-answer` in `useChat.ts` after streaming; show "Safety edit applied" when answer is modified. Remove the empty-context 400 guard in `audit-answer/index.ts` first.
+4. **Polish StatusBadge popover** – Show names truncate at 18 chars in badge; full name visible in popover.
+5. **`needs-episode` with no showId** – If TVMaze lookup fails entirely, `EpisodePicker` can't render (requires showId). Fallback: show manual season/episode text inputs.
 
 ---
 
