@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Loader2, RefreshCw, Trash2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
@@ -37,7 +36,6 @@ export function StatusBadge({
   const [episode, setEpisode] = useState(meta?.episode || '');
   const [context, setContext] = useState(meta?.context || '');
 
-  // Sync local state when meta changes (e.g. session switched)
   const handleOpenChange = (nextOpen: boolean) => {
     if (nextOpen && meta) {
       setSelectedShow(meta.showId ? { id: meta.showId, name: meta.showTitle } : null);
@@ -62,9 +60,7 @@ export function StatusBadge({
 
   const handleEpisodeChange = (e: string) => {
     setEpisode(e);
-    if (season && e) {
-      onEpisodeChange(season, e);
-    }
+    if (season && e) onEpisodeChange(season, e);
   };
 
   const handleContextSave = () => {
@@ -77,8 +73,9 @@ export function StatusBadge({
     setOpen(false);
   };
 
-  // Trigger label
+  // ── Trigger pill ──────────────────────────────────────────────────
   let triggerContent: React.ReactNode;
+
   if (phase === 'detecting' || phase === 'resolving' || isDetecting) {
     triggerContent = (
       <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -88,27 +85,33 @@ export function StatusBadge({
     );
   } else if (phase === 'no-show') {
     triggerContent = (
-      <Badge variant="outline" className="text-xs cursor-pointer h-6 px-2 gap-1">
+      <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs text-muted-foreground bg-secondary border border-border cursor-pointer hover:text-foreground hover:border-primary/30 transition-colors">
         + Setup
-      </Badge>
+      </span>
     );
   } else if (meta) {
-    const label = [
-      meta.showTitle.length > 18 ? meta.showTitle.slice(0, 16) + '…' : meta.showTitle,
-      meta.season && meta.episode ? `S${meta.season} E${meta.episode}` : null,
-    ]
-      .filter(Boolean)
-      .join(' • ');
+    const title = meta.showTitle.length > 22
+      ? meta.showTitle.slice(0, 20) + '…'
+      : meta.showTitle;
+    const ep = meta.season && meta.episode ? `S${meta.season}E${meta.episode}` : null;
+    const label = ep ? `${title} · ${ep}` : title;
+
+    // Dot colour: violet when episode known, amber when episode missing
+    const dotClass = meta.season && meta.episode
+      ? 'bg-primary'
+      : 'bg-amber-400';
+
     triggerContent = (
-      <Badge variant="outline" className="text-xs cursor-pointer h-6 px-2 max-w-[180px] truncate">
+      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary border border-border text-foreground cursor-pointer hover:border-primary/40 transition-colors max-w-[190px] truncate">
+        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotClass}`} />
         {label}
-      </Badge>
+      </span>
     );
   } else {
     triggerContent = (
-      <Badge variant="outline" className="text-xs cursor-pointer h-6 px-2">
+      <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs text-muted-foreground bg-secondary border border-border cursor-pointer hover:text-foreground hover:border-primary/30 transition-colors">
         + Setup
-      </Badge>
+      </span>
     );
   }
 
@@ -164,16 +167,12 @@ export function StatusBadge({
             placeholder="Paste episode recap or summary here..."
             className="min-h-[80px] bg-input border-border resize-none text-xs"
           />
-          <Button
-            size="sm"
-            onClick={handleContextSave}
-            className="w-full h-8 text-xs"
-          >
+          <Button size="sm" onClick={handleContextSave} className="w-full h-8 text-xs">
             Save context
           </Button>
         </div>
 
-        <div className="border-t border-border pt-2 space-y-2">
+        <div className="border-t border-border pt-2 space-y-1">
           <Button
             variant="ghost"
             size="sm"

@@ -41,15 +41,18 @@ export function HistorySheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-72 p-0">
+      <SheetContent side="left" className="w-72 p-0 bg-card border-r border-border">
         <SheetHeader className="px-4 py-3 border-b border-border">
-          <SheetTitle className="text-sm font-semibold">Chat History</SheetTitle>
+          <SheetTitle className="font-brand text-sm font-semibold text-foreground">
+            History
+          </SheetTitle>
         </SheetHeader>
 
-        <div className="overflow-y-auto h-[calc(100%-56px)]">
+        <div className="overflow-y-auto h-[calc(100%-52px)]">
           {sorted.length === 0 ? (
-            <div className="px-4 py-8 text-center text-xs text-muted-foreground">
-              No sessions yet
+            <div className="px-4 py-10 text-center">
+              <MessageSquare className="w-6 h-6 text-muted-foreground/30 mx-auto mb-2" />
+              <p className="text-xs text-muted-foreground">No sessions yet</p>
             </div>
           ) : (
             <ul className="py-1">
@@ -66,30 +69,45 @@ export function HistorySheet({
                   <li key={session.sessionId}>
                     <div
                       className={cn(
-                        'group flex items-start gap-2 px-3 py-2.5 cursor-pointer hover:bg-muted/50 transition-colors',
-                        isActive && 'bg-primary/10 border-l-2 border-primary'
+                        'group flex items-start gap-2.5 px-3 py-2.5 cursor-pointer transition-colors',
+                        isActive
+                          ? 'bg-primary/10 border-l-2 border-primary'
+                          : 'hover:bg-secondary border-l-2 border-transparent'
                       )}
                       onClick={() => {
                         onSwitch(session.sessionId);
                         onOpenChange(false);
                       }}
                     >
-                      <MessageSquare className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                      {/* Dot instead of icon — cleaner */}
+                      <span
+                        className={cn(
+                          'w-1.5 h-1.5 rounded-full mt-1.5 shrink-0',
+                          isActive ? 'bg-primary' : 'bg-muted-foreground/40'
+                        )}
+                      />
 
                       <div className="flex-1 min-w-0">
-                        <div className="text-xs font-medium text-foreground truncate">
+                        <div className={cn(
+                          'text-xs font-medium truncate',
+                          isActive ? 'text-foreground' : 'text-foreground/80'
+                        )}>
                           {session.showTitle}
                         </div>
-                        <div className="flex items-center gap-1.5 mt-0.5">
+                        <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                           {episodeLabel && (
-                            <span className="text-xs text-muted-foreground">{episodeLabel}</span>
+                            <span className="text-[11px] text-muted-foreground">
+                              {episodeLabel}
+                            </span>
                           )}
-                          {episodeLabel && <span className="text-muted-foreground">·</span>}
-                          <span className="text-xs text-muted-foreground">
+                          {episodeLabel && (
+                            <span className="text-[11px] text-muted-foreground/40">·</span>
+                          )}
+                          <span className="text-[11px] text-muted-foreground">
                             {session.messageCount} msg{session.messageCount !== 1 ? 's' : ''}
                           </span>
-                          <span className="text-muted-foreground">·</span>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-[11px] text-muted-foreground/40">·</span>
+                          <span className="text-[11px] text-muted-foreground">
                             {relativeTime(session.lastMessageAt)}
                           </span>
                         </div>
@@ -98,7 +116,7 @@ export function HistorySheet({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0 text-muted-foreground hover:text-destructive shrink-0"
+                        className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0 text-muted-foreground/50 hover:text-destructive shrink-0 transition-opacity"
                         onClick={(e) => {
                           e.stopPropagation();
                           onDelete(session.sessionId);
