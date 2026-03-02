@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,61 +6,62 @@
 
 @layer base {
   :root {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
+    /* ── Deep Space palette ────────────────────────────────────────── */
+    --background: 245 22% 7%;        /* #0D0D14 — deep space, hint of indigo */
+    --foreground: 245 45% 95%;       /* #EEEDF8 — off-white with lavender tint */
 
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 98%;
+    --card: 240 19% 9%;              /* #13131C — surface layer */
+    --card-foreground: 245 45% 95%;
 
-    --popover: 222 47% 10%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 244 22% 12%;
+    --popover-foreground: 245 45% 95%;
 
-    --primary: 185 80% 50%;
-    --primary-foreground: 222 47% 6%;
+    --primary: 246 89% 70%;          /* #7C6FF7 — soft violet accent */
+    --primary-foreground: 245 22% 7%;
 
-    --secondary: 222 30% 15%;
-    --secondary-foreground: 210 40% 90%;
+    --secondary: 244 22% 14%;        /* #1C1B2A — elevated surface (assistant bubbles) */
+    --secondary-foreground: 245 45% 95%;
 
-    --muted: 222 30% 12%;
-    --muted-foreground: 215 20% 55%;
+    --muted: 244 22% 12%;
+    --muted-foreground: 248 15% 60%; /* #8E8AA8 — muted purple-grey */
 
-    --accent: 185 60% 40%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 246 89% 70%;
+    --accent-foreground: 245 22% 7%;
 
     --destructive: 0 72% 51%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 245 45% 95%;
 
-    --border: 222 30% 18%;
-    --input: 222 30% 15%;
-    --ring: 185 80% 50%;
+    --border: 245 23% 20%;           /* #2A2840 — subtle, low-contrast */
+    --input: 244 22% 11%;
+    --ring: 246 89% 70%;
 
     --radius: 0.75rem;
 
     /* Custom SpoilerShield tokens */
-    --shield-glow: 185 80% 50%;
-    --shield-glow-dim: 185 60% 30%;
-    --glass: 222 47% 10%;
-    --glass-border: 222 30% 20%;
-    
+    --shield-glow: 246 89% 70%;
+    --shield-glow-dim: 246 60% 45%;
+    --glass: 244 22% 12%;
+    --glass-border: 245 23% 20%;
+
     /* Gradients */
-    --gradient-shield: linear-gradient(135deg, hsl(185 80% 50% / 0.2), hsl(185 60% 30% / 0.1));
-    --gradient-card: linear-gradient(180deg, hsl(222 47% 10%), hsl(222 47% 8%));
-    --gradient-glow: radial-gradient(ellipse at top, hsl(185 80% 50% / 0.15), transparent 60%);
-    
+    --gradient-shield: linear-gradient(135deg, hsl(246 89% 70% / 0.15), hsl(246 60% 45% / 0.08));
+    --gradient-card: linear-gradient(180deg, hsl(244 22% 12%), hsl(244 22% 10%));
+    --gradient-glow: radial-gradient(ellipse at center, hsl(246 89% 70% / 0.06), transparent 65%);
+
     /* Shadows */
-    --shadow-glow: 0 0 40px hsl(185 80% 50% / 0.25);
-    --shadow-card: 0 8px 32px hsl(222 47% 4% / 0.5);
-    --shadow-input: 0 2px 8px hsl(222 47% 4% / 0.3);
+    --shadow-glow: 0 0 32px hsl(246 89% 70% / 0.2);
+    --shadow-card: 0 8px 32px hsl(245 22% 4% / 0.6);
+    --shadow-input: 0 2px 8px hsl(245 22% 4% / 0.4);
 
     /* Sidebar - kept for compatibility */
-    --sidebar-background: 222 47% 8%;
-    --sidebar-foreground: 210 40% 90%;
-    --sidebar-primary: 185 80% 50%;
-    --sidebar-primary-foreground: 222 47% 6%;
-    --sidebar-accent: 222 30% 15%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 222 30% 18%;
-    --sidebar-ring: 185 80% 50%;
+    --sidebar-background: 240 19% 9%;
+    --sidebar-foreground: 245 45% 95%;
+    --sidebar-primary: 246 89% 70%;
+    --sidebar-primary-foreground: 245 22% 7%;
+    --sidebar-accent: 244 22% 14%;
+    --sidebar-accent-foreground: 245 45% 95%;
+    --sidebar-border: 245 23% 20%;
+    --sidebar-ring: 246 89% 70%;
   }
 }
 
@@ -71,7 +72,7 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Outfit', system-ui, sans-serif;
+    font-family: 'DM Sans', system-ui, sans-serif;
   }
 
   /* Custom scrollbar */

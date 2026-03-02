@@ -1,4 +1,4 @@
-import { Shield, History } from 'lucide-react';
+import { History } from 'lucide-react';
 import { useSidePanel } from '@/hooks/useSidePanel';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -16,12 +16,46 @@ interface StatusBadgePassthroughProps {
 }
 
 interface HeaderProps {
-  // Side-panel props
   statusBadgeProps?: StatusBadgePassthroughProps;
   onOpenHistory?: () => void;
   sessionCount?: number;
-  // Web-app props (legacy, unused in side panel)
   onRefresh?: () => void;
+}
+
+/** Inline SVG shield logo with a breathing sparkle in the centre. */
+function ShieldLogo({ size = 22 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id="shieldGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#7C6FF7" />
+          <stop offset="100%" stopColor="#A78BFA" />
+        </linearGradient>
+      </defs>
+
+      {/* Rounded modern shield body */}
+      <path
+        d="M12 2.5C10.5 2.5 5 4.5 5 4.5V11.5C5 16.5 8.2 20.4 12 22C15.8 20.4 19 16.5 19 11.5V4.5C19 4.5 13.5 2.5 12 2.5Z"
+        fill="url(#shieldGrad)"
+      />
+
+      {/* 4-point sparkle — slow breathing pulse */}
+      <path
+        d="M12 8.5L12.65 10.85L15 11.5L12.65 12.15L12 14.5L11.35 12.15L9 11.5L11.35 10.85L12 8.5Z"
+        fill="white"
+        fillOpacity="0.9"
+        className="animate-breathe"
+        style={{ transformOrigin: '12px 11.5px' }}
+      />
+    </svg>
+  );
 }
 
 export function Header({
@@ -33,14 +67,20 @@ export function Header({
 
   if (isSidePanel) {
     return (
-      <header className="py-2 px-3 border-b border-border bg-card/50 backdrop-blur-sm">
-        <div className="flex items-center justify-between gap-2">
-          {/* Brand */}
-          <h1 className="text-sm font-semibold text-foreground tracking-tight shrink-0">
-            Spoiler<span className="text-primary">Shield</span>
-          </h1>
+      <header className="relative py-2.5 px-3 border-b border-white/5 bg-card/70 backdrop-blur-md z-20 shrink-0">
+        {/* Subtle top-to-bottom depth gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
 
-          {/* Center/right: badge + history */}
+        <div className="relative flex items-center justify-between gap-2">
+          {/* Logo + wordmark */}
+          <div className="flex items-center gap-2 shrink-0">
+            <ShieldLogo size={22} />
+            <span className="font-brand text-sm font-semibold tracking-tight text-foreground select-none">
+              spoilershield
+            </span>
+          </div>
+
+          {/* Status badge + history button */}
           <div className="flex items-center gap-1.5">
             {statusBadgeProps && <StatusBadge {...statusBadgeProps} />}
 
@@ -66,19 +106,14 @@ export function Header({
     );
   }
 
-  // Full header for web app (unchanged)
+  // Web-app header
   return (
-    <header className="py-4 px-6 border-b border-border bg-card/50 backdrop-blur-sm">
+    <header className="py-4 px-6 border-b border-white/5 bg-card/70 backdrop-blur-md">
       <div className="max-w-7xl mx-auto flex items-center gap-3">
-        <div className="relative">
-          <div className="absolute inset-0 bg-primary/30 blur-xl rounded-full" />
-          <div className="relative p-2 rounded-xl bg-primary/10 border border-primary/20">
-            <Shield className="w-7 h-7 text-primary glow-text" />
-          </div>
-        </div>
+        <ShieldLogo size={32} />
         <div>
-          <h1 className="text-xl font-bold text-foreground tracking-tight">
-            Spoiler<span className="text-primary">Shield</span>
+          <h1 className="font-brand text-xl font-semibold text-foreground tracking-tight">
+            spoilershield
           </h1>
           <p className="text-xs text-muted-foreground">
             Ask questions without spoilers

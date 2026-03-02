@@ -1,29 +1,23 @@
 import { type RefObject } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { StylePills } from '@/components/StylePills';
 import { ChatStatusBar } from '@/components/ChatStatusBar';
-import { Loader2 } from 'lucide-react';
-import { ChatMessage, ResponseStyle, SessionMeta, InitPhase } from '@/lib/types';
+import { Loader2, ArrowUp } from 'lucide-react';
+import { ChatMessage, SessionMeta, InitPhase } from '@/lib/types';
 
 interface QAStepProps {
   messages: ChatMessage[];
   isLoading: boolean;
   error: string | null;
   question: string;
-  style: ResponseStyle;
   hasAnswer: boolean;
-  // New props for chat-first UX
   meta?: SessionMeta | null;
   isLoadingRecap?: boolean;
   phase?: InitPhase;
-  // Legacy prop kept for web-app path (optional)
   context?: string;
   qaHistoryRef: RefObject<HTMLDivElement>;
   onQuestionChange: (q: string) => void;
   onSubmit: (e: React.FormEvent) => void;
-  onStyleSelect: (style: ResponseStyle) => void;
-  // Kept optional for backward-compat (web-app path)
+  onClearChat?: () => void;
   onEditContext?: () => void;
 }
 
@@ -32,8 +26,6 @@ export function QAStep({
   isLoading,
   error,
   question,
-  style,
-  hasAnswer,
   meta,
   isLoadingRecap = false,
   phase,
@@ -41,15 +33,14 @@ export function QAStep({
   qaHistoryRef,
   onQuestionChange,
   onSubmit,
-  onStyleSelect,
+  onClearChat,
   onEditContext,
 }: QAStepProps) {
-  // Determine effective context (prefer meta.context for side-panel, fall back to prop)
   const effectiveContext = meta?.context ?? context ?? '';
   const isContextMissing = !effectiveContext.trim();
   const isInputDisabled = isLoading || isLoadingRecap;
 
-  // Legacy web-app path: show "Context Required" card
+  // Legacy web-app path
   if (isContextMissing && onEditContext && !meta) {
     return (
       <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 space-y-3">
@@ -68,53 +59,80 @@ export function QAStep({
     ? `Ask about ${meta.showTitle}…`
     : 'Ask a question…';
 
+  // Show typing dots when loading but no assistant reply in flight yet
+  const showTypingIndicator =
+    isLoading &&
+    (messages.length === 0 || messages[messages.length - 1].role === 'user');
+
   return (
-    <div className="space-y-3">
-      {/* Q&A History */}
+    <div className="flex flex-col gap-3">
+
+      {/* ── Message list ───────────────────────────────────────────── */}
       <div
         ref={qaHistoryRef}
-        className="rounded-lg border border-border bg-card/50 backdrop-blur-sm p-3 space-y-3 max-h-[400px] overflow-y-auto min-h-[100px]"
+        className="space-y-2 max-h-[420px] overflow-y-auto px-1 pb-1 scroll-smooth"
       >
-        {messages.length > 0 ? (
-          <>
-            <div className="text-sm font-medium text-foreground">Conversation</div>
-            <div className="space-y-3">
-              {messages.map((msg, idx) => {
-                if (msg.role === 'user') {
-                  const answer = messages[idx + 1];
-                  return (
-                    <div key={msg.id} className="space-y-2 pb-3 border-b border-border last:border-0">
-                      <div className="text-xs text-muted-foreground font-medium">Question</div>
-                      <div className="text-sm text-foreground">{msg.content}</div>
-                      {answer && answer.role === 'assistant' && (
-                        <>
-                          <div className="text-xs text-muted-foreground font-medium mt-2">Answer</div>
-                          <div className="text-sm text-muted-foreground whitespace-pre-wrap">
-                            {answer.content}
-                          </div>
-                        </>
-                      )}
-                      {isLoading && idx === messages.length - 1 && (
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                          Thinking...
-                        </div>
-                      )}
-                    </div>
-                  );
-                }
-                return null;
-              })}
-            </div>
-          </>
-        ) : (
-          <div className="text-sm text-muted-foreground text-center py-4">
-            Ready to help — ask your first question below
+        {messages.length === 0 && !isLoading ? (
+          /* Empty state */
+          <div className="flex flex-col items-center justify-center py-10 gap-2 text-center select-none">
+            <p className="text-2xl">💬</p>
+            <p className="text-sm text-muted-foreground">
+              Ask anything — I've got your back
+            </p>
           </div>
+        ) : (
+          <>
+            {/* Clear chat — subtle, centred above messages */}
+            {onClearChat && messages.length > 0 && (
+              <div className="flex justify-center pb-1">
+                <button
+                  onClick={onClearChat}
+                  className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+                >
+                  Clear chat
+                </button>
+              </div>
+            )}
+
+            {/* Bubbles */}
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex animate-bubble-pop ${
+                  msg.role === 'user' ? 'justify-end' : 'justify-start'
+                }`}
+              >
+                <div
+                  className={`max-w-[85%] px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
+                    msg.role === 'user'
+                      ? 'bg-primary text-primary-foreground rounded-2xl rounded-br-[4px]'
+                      : 'bg-secondary text-foreground rounded-2xl rounded-bl-[4px]'
+                  }`}
+                >
+                  {msg.content}
+                </div>
+              </div>
+            ))}
+
+            {/* Typing indicator */}
+            {showTypingIndicator && (
+              <div className="flex justify-start animate-bubble-pop">
+                <div className="bg-secondary rounded-2xl rounded-bl-[4px] px-4 py-3.5 flex gap-1.5 items-center">
+                  {[0, 150, 300].map((delay) => (
+                    <span
+                      key={delay}
+                      className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-dot-bounce"
+                      style={{ animationDelay: `${delay}ms` }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
-      {/* Status bar (side-panel path) */}
+      {/* ── Status bar ─────────────────────────────────────────────── */}
       {meta !== undefined && (
         <ChatStatusBar
           meta={meta ?? null}
@@ -123,35 +141,37 @@ export function QAStep({
         />
       )}
 
-      {/* Style chips */}
-      {hasAnswer && (
-        <div className="flex justify-start">
-          <StylePills selected={style} onSelect={onStyleSelect} />
-        </div>
-      )}
-
-      {/* Question input */}
-      <form onSubmit={onSubmit} className="space-y-2">
-        <div className="flex gap-2">
-          <Input
-            value={question}
-            onChange={(e) => onQuestionChange(e.target.value)}
-            placeholder={placeholder}
-            disabled={isInputDisabled}
-            className="flex-1 bg-input border-border input-glow text-sm h-9"
-          />
-          <Button
-            type="submit"
-            size="sm"
-            disabled={isInputDisabled || !question.trim()}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3"
-          >
-            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send'}
-          </Button>
-        </div>
+      {/* ── Pill input ─────────────────────────────────────────────── */}
+      <form onSubmit={onSubmit} className="relative">
+        <input
+          value={question}
+          onChange={(e) => onQuestionChange(e.target.value)}
+          placeholder={placeholder}
+          disabled={isInputDisabled}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              const form = e.currentTarget.closest('form');
+              if (form) form.requestSubmit();
+            }
+          }}
+          className="w-full bg-card border border-border rounded-full px-5 py-3 pr-12 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none transition-shadow duration-200 focus:shadow-[0_0_0_1px_hsl(var(--primary)/0.4),_0_0_16px_hsl(var(--primary)/0.15)] disabled:opacity-50"
+        />
+        <button
+          type="submit"
+          disabled={isInputDisabled || !question.trim()}
+          className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-primary flex items-center justify-center disabled:opacity-25 transition-all duration-150 hover:scale-105 hover:shadow-[0_0_12px_hsl(var(--primary)/0.5)]"
+        >
+          {isLoading
+            ? <Loader2 className="w-4 h-4 animate-spin text-primary-foreground" />
+            : <ArrowUp className="w-4 h-4 text-primary-foreground" />
+          }
+        </button>
       </form>
 
-      {error && <div className="text-xs text-destructive">{error}</div>}
+      {error && (
+        <div className="text-xs text-destructive px-1">{error}</div>
+      )}
     </div>
   );
 }

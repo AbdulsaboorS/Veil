@@ -78,7 +78,8 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["Outfit", "system-ui", "sans-serif"],
+        sans: ["DM Sans", "system-ui", "sans-serif"],
+        brand: ["Space Grotesk", "system-ui", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
       },
       keyframes: {
@@ -102,6 +103,22 @@ export default {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
+        // iMessage-style spring pop for new bubbles
+        "bubble-pop": {
+          "0%": { opacity: "0", transform: "scale(0.85) translateY(6px)" },
+          "60%": { transform: "scale(1.02) translateY(-1px)" },
+          "100%": { opacity: "1", transform: "scale(1) translateY(0)" },
+        },
+        // Staggered typing indicator dots
+        "dot-bounce": {
+          "0%, 60%, 100%": { transform: "translateY(0)", opacity: "0.4" },
+          "30%": { transform: "translateY(-4px)", opacity: "1" },
+        },
+        // Slow breathing pulse for the logo sparkle
+        breathe: {
+          "0%, 100%": { opacity: "0.5", transform: "scale(1)" },
+          "50%": { opacity: "1", transform: "scale(1.25)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -109,6 +126,9 @@ export default {
         "fade-in": "fade-in 0.3s ease-out",
         "slide-in-right": "slide-in-right 0.3s ease-out",
         shimmer: "shimmer 2s linear infinite",
+        "bubble-pop": "bubble-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
+        "dot-bounce": "dot-bounce 1.2s ease-in-out infinite",
+        breathe: "breathe 3s ease-in-out infinite",
       },
     },
   },
