@@ -65,8 +65,9 @@ spoiler-shield/
 - **LLM:** All LLM calls use **Google Generative AI native API** (`GOOGLE_AI_API_KEY` Supabase secret). Chat/audit: `gemini-3-flash-preview` (streaming). Web recap + sanitize: `gemini-2.0-flash` (non-streaming, supports Search Grounding). All functions self-contained — no shared module imports.
 - **Chat:** Working end-to-end for any show. Streams correctly. Works without episode context (model uses general show knowledge). `useChat.ts` parses `candidates[0].content.parts[0].text`.
 - **UX:** Chat-first side panel. Panel opens directly to chat — no wizard. Sessions per show+episode; history drawer for switching.
-- **Context pipeline:** Four-tier fallback — TVMaze (sanitized) → Fandom (JJK S1) → Gemini web search → model knowledge. All recap text goes through `sanitize-episode-context` before use.
-- **Detection:** `background.js` programmatically injects `content.js` on icon click and `tabs.onUpdated` — works on already-open tabs after extension reload.
+- **Context pipeline:** Five-tier fallback — TVMaze episode (sanitized) → AniList show overview (sanitized) → Fandom (JJK S1) → Gemini web search → model knowledge. Netflix no-episode path uses TVMaze show-level summary directly (bypasses `fetchRecap`).
+- **Detection:** `background.js` programmatically injects `content.js` on icon click and `tabs.onUpdated` — works on already-open tabs after extension reload. Netflix episode info is unreliable (player UI only); episode dedup uses URL pathname.
+- **Extension build:** `BUILD_TARGET=extension npm run build` compiles `src/` into `extension/app/assets/index.js`. Must run after any `src/` changes.
 - **Audit pass:** Deployed but not wired into `useChat.ts` — re-enable after confirming chat stability.
 
 ---
@@ -95,13 +96,12 @@ After making changes, run this quick manual check to catch regressions:
 6. Navigate to a different show without refreshing — detection re-runs automatically.
 7. Open on the Crunchyroll home page — panel shows "Pick something to watch 🍿".
 8. Try a show with no TVMaze summary (e.g. Kingdom) — web search recap loads, chat works.
-9. No console errors related to `useEffect` loops or missing refs.
+9. Netflix watch page: `JSON.parse(localStorage.getItem('spoilershield-sessions') || '[]').find(s => s.platform === 'netflix')` — context field should be non-empty after detection.
+10. No console errors related to `useEffect` loops or missing refs.
 
 ---
 
 ## 6. Current Bugs / Open Issues
-
-No active bugs. All previously known issues are resolved.
 
 | Issue | Status |
 |-------|--------|
@@ -110,16 +110,22 @@ No active bugs. All previously known issues are resolved.
 | `gemini-2.0-flash` not available for API key | Fixed 2026-02-21 (switched to `gemini-3-flash-preview`) |
 | React hooks violation in Index.tsx | Fixed 2026-02-21 (useCallbacks moved above conditional) |
 | 4-step wizard friction | Fixed 2026-02-21 (chat-first UX rewrite) |
+| Netflix recap not saving (stale `activeSessionIdRef`) | Fixed 2026-03-07 — all `updateContext` calls now pass explicit `sessionId` |
+| Netflix episode navigation dedup broken (trackId in URL) | Fixed 2026-03-07 — sidepanel.js + useInitFlow.ts use pathname only |
+| Crunchyroll homepage false-positive detection | Fixed 2026-03-07 — content.js Methods 4/5 gated to `/series/` and `/watch/` paths |
+| Netflix episode number unreliable | **Open** — player UI only; active session may show wrong episode. Needs KB (content ID → episode mapping). |
+| Netflix no-episode path skips AniList | **Open** — if TVMaze has no show summary, context stays empty. Fix: fall back to `fetchRecap` when `showSummary` is null. |
 
 ---
 
 ## 7. Upcoming Work (Prioritized)
 
-1. **Netflix detection** – Get `content.js` reliably reading show title + episode from Netflix URLs/DOM. Smoke test full flow (detection → chat → spoiler safety). Once confirmed, update README + landing page to list Netflix as supported. Then submit to Chrome Web Store.
-2. **Chrome Web Store submission** – Prep store listing (description, screenshots, privacy policy). Netflix support should be confirmed first.
-3. **Re-enable audit pass** – Wire `audit-answer` in `useChat.ts` after streaming; show "Safety edit applied" when answer is modified. Remove the empty-context 400 guard in `audit-answer/index.ts` first.
-4. **Polish StatusBadge popover** – Show names truncate at 18 chars in badge; full name visible in popover.
-5. **`needs-episode` with no showId** – If TVMaze lookup fails entirely, `EpisodePicker` can't render (requires showId). Fallback: show manual season/episode text inputs.
+1. **Show metadata knowledge base** – Supabase table `show_summaries` + `get-show-context` edge function replacing the client-side multi-API waterfall. Lazily populated on first detection, shared across all users. Also enables Netflix content ID → episode mapping (fixes unreliable episode numbers). Discuss architecture before starting.
+2. **Netflix no-episode fallback** – When TVMaze has no show summary, fall back to `fetchRecap(showId, 1, 1, resolvedTitle)` in the no-episode branch to reach AniList/web search.
+3. **Netflix subtitle context** – content.js already captures subtitle lines into `spoilershield_context`. Wire this into the chat context pipeline so the model knows where in the episode the user currently is.
+4. **Chrome Web Store submission** – Prep store listing (description, screenshots, privacy policy). Netflix recap confirmed working; episode number reliability still open.
+5. **Re-enable audit pass** – Wire `audit-answer` in `useChat.ts` after streaming; show "Safety edit applied" when answer is modified.
+6. **Polish StatusBadge popover** – Show names truncate at 18 chars in badge; full name visible in popover.
 
 ---
 

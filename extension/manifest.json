@@ -7,7 +7,8 @@
   "host_permissions": [
     "https://*.crunchyroll.com/*",
     "https://crunchyroll.com/*",
-    "https://www.netflix.com/*"
+    "https://www.netflix.com/*",
+    "https://graphql.anilist.co/*"
   ],
   "background": {
     "service_worker": "background.js"

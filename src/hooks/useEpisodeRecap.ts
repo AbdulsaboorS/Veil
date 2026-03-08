@@ -125,6 +125,91 @@ export function useEpisodeRecap() {
     }
   }, []);
 
+  const fetchAniListShow = useCallback(async (
+    showTitle: string,
+    season: number,
+    episode: number
+  ): Promise<RecapResult> => {
+    const slug = showTitle.toLowerCase().replace(/\s+/g, '-');
+    const cacheKey = `anilist_show_${slug}`;
+    const cachedRaw = localStorage.getItem(cacheKey);
+    if (cachedRaw) {
+      try {
+        const cached: CachedEpisode = JSON.parse(cachedRaw);
+        if (Date.now() - cached.cachedAt <= CACHE_TTL) {
+          return { summary: cached.summary, source: cached.source };
+        }
+        localStorage.removeItem(cacheKey);
+      } catch {
+        localStorage.removeItem(cacheKey);
+      }
+    }
+
+    try {
+      const query = `
+        query ($search: String) {
+          Media(search: $search, type: ANIME) {
+            id
+            title { romaji english }
+            description(asHtml: false)
+            episodes
+            status
+          }
+        }
+      `;
+      const response = await fetch('https://graphql.anilist.co', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, variables: { search: showTitle } }),
+      });
+      if (!response.ok) return { summary: null, source: null };
+
+      const data = await response.json();
+      const media = data?.data?.Media;
+      if (!media?.description?.trim()) return { summary: null, source: null };
+
+      const rawDescription = media.description
+        .replace(/<[^>]*>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .trim();
+
+      if (!rawDescription) return { summary: null, source: null };
+
+      // Sanitize to strip any forward-spoiler language from the show overview
+      let finalDescription = rawDescription;
+      try {
+        const sanitizeResponse = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sanitize-episode-context`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({ rawText: rawDescription, season, episode }),
+          }
+        );
+        if (sanitizeResponse.ok) {
+          const sanitizeData = await sanitizeResponse.json();
+          const sanitized = sanitizeData.sanitized?.trim();
+          if (sanitized) finalDescription = sanitized;
+        }
+      } catch {
+        // Sanitize failed — use raw description (show overview is generally low-risk)
+      }
+
+      const summary = `[Show overview] ${finalDescription}`;
+      localStorage.setItem(cacheKey, JSON.stringify({ summary, source: 'anilist', cachedAt: Date.now() }));
+      return { summary, source: 'anilist' as const };
+    } catch (err) {
+      console.error('Error fetching AniList show:', err);
+      return { summary: null, source: null };
+    }
+  }, []); // stable — no deps
+
   const fetchRecap = useCallback(async (
     showId: number,
     season: number,
@@ -195,6 +280,16 @@ export function useEpisodeRecap() {
             setIsLoading(false);
             return result;
           }
+        }
+      }
+
+      // Fallback: AniList show overview (anime-first; handles TVMaze season numbering mismatch)
+      if (showTitle) {
+        const anilistResult = await fetchAniListShow(showTitle, season, episode);
+        if (anilistResult.summary) {
+          setRecap(anilistResult);
+          setIsLoading(false);
+          return anilistResult;
         }
       }
 
@@ -292,7 +387,7 @@ export function useEpisodeRecap() {
       setIsLoading(false);
       return result;
     }
-  }, [fetchFandomEpisode]);
+  }, [fetchFandomEpisode, fetchAniListShow]);
 
   const setManualRecap = (text: string) => {
     setRecap({ summary: text, source: 'manual' });

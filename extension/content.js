@@ -94,6 +94,8 @@ window.spoilerShieldDiagnose = function() {
   console.log("=== End Diagnostic ===");
 };
 
+let _lastNetflixDetection = { title: '', episodeInfo: null };
+
 const state = {
   buffer: [],
   lastLine: "",
@@ -212,9 +214,14 @@ function detectShowInfo() {
       }
     }
 
+    // Methods 4 & 5 use page title / og:title which are unreliable on browse/homepage pages
+    // (e.g. "Watch Anime and Read Manga Online | Crunchyroll" → false positive "Anime and Read Manga Online").
+    // Only run these on known content paths.
+    const isContentPath = /\/(series|watch)\//.test(location.pathname);
+
     // Method 4: Page title — Crunchyroll uses "Episode Title | Show Name | Crunchyroll"
     // Split on "|" and find the show name segment (last non-"Crunchyroll" part).
-    if (!showTitle) {
+    if (!showTitle && isContentPath) {
       const pageTitle = document.title || '';
       const parts = pageTitle.split('|').map(p => p.trim()).filter(Boolean);
       const nonCR = parts.filter(p => !/^crunchyroll$/i.test(p));
@@ -230,7 +237,7 @@ function detectShowInfo() {
     }
 
     // Method 5: OG tag fallback
-    if (!showTitle) {
+    if (!showTitle && isContentPath) {
       const ogTitle = document.querySelector('meta[property="og:title"]');
       const content = ogTitle?.getAttribute('content') || '';
       if (content) {
@@ -262,29 +269,79 @@ function detectShowInfo() {
     }
 
   } else if (platform === 'netflix') {
-    // Method 1: Video title element
-    const titleEl = document.querySelector('[data-uia="video-title"]') ||
-                    document.querySelector('[class*="video-title"]') ||
-                    document.querySelector('h1[class*="title"]');
+    // Gate: only detect on /watch/ URLs
+    if (!/^\/watch\//.test(location.pathname)) {
+      _lastNetflixDetection = { title: '', episodeInfo: null };
+      return {
+        platform, showTitle: '', episodeInfo: null,
+        url: location.href, detectedAt: new Date().toISOString(),
+      };
+    }
+
+    // Method 1: [data-uia="video-title"]
+    // Structure: <div data-uia="video-title"><h4>SHOW NAME</h4><span>E1</span><span>Episode 1</span></div>
+    // This element only exists when the player UI is visible (on hover / auto-play).
+    const titleEl = document.querySelector('[data-uia="video-title"]');
     if (titleEl) {
-      showTitle = normalizeLine(titleEl.textContent || titleEl.innerText || '');
+      // Title is in the first child element (e.g. <h4>)
+      const firstChild = titleEl.firstElementChild;
+      if (firstChild) {
+        const t = normalizeLine(firstChild.textContent || '');
+        if (t && t.toLowerCase() !== 'netflix') {
+          showTitle = t;
+        }
+      }
+      // Episode info from remaining child elements (e.g. <span>E1</span><span>Episode 1</span>)
+      if (!episodeInfo) {
+        const childText = Array.from(titleEl.children)
+          .slice(1)  // skip the title element
+          .map(el => el.textContent || '').join(' ');
+        episodeInfo = parseEpisodeText(childText);
+      }
     }
 
-    // Method 2: Page title  "Show Name - Netflix"
-    if (!showTitle) {
-      showTitle = (document.title || '').replace(/\s*-\s*Netflix.*$/i, '').trim();
-    }
-
-    // Episode info from player elements
+    // Method 2: [data-uia="episode-title"] (separate element)
     if (!episodeInfo) {
-      const epEl = document.querySelector('[data-uia="episode-title"]') ||
-                   document.querySelector('[class*="episode-title"]');
+      const epEl = document.querySelector('[data-uia="episode-title"]');
       if (epEl) episodeInfo = parseEpisodeText(epEl.textContent || '');
     }
 
-    // Fallback: page title
-    if (!episodeInfo) {
-      episodeInfo = parseEpisodeText(document.title || '');
+    // Method 3: Page title — always available, doesn't require player UI.
+    // Netflix sets document.title to "Show Name - Netflix" or "Episode Title - Show Name - Netflix".
+    if (!showTitle) {
+      const rawTitle = document.title || '';
+      // Try "A - B - Netflix" → B is the show name
+      const parts = rawTitle.split(/\s*[-–]\s*/);
+      const nonNetflix = parts.filter(p => p && !/^netflix$/i.test(p.trim()));
+      if (nonNetflix.length >= 2) {
+        // Last non-Netflix segment is the show name
+        showTitle = nonNetflix[nonNetflix.length - 1].trim();
+      } else if (nonNetflix.length === 1) {
+        showTitle = nonNetflix[0].trim();
+      }
+      if (showTitle && showTitle.toLowerCase() === 'netflix') showTitle = '';
+      if (showTitle) log('[netflix] Method 3 (page title):', showTitle);
+    }
+
+    // Method 4: og:title meta tag
+    if (!showTitle) {
+      const ogTitle = document.querySelector('meta[property="og:title"]')?.getAttribute('content') || '';
+      if (ogTitle && !/^netflix$/i.test(ogTitle.trim())) {
+        showTitle = ogTitle.replace(/\s*[-–|]\s*Netflix.*$/i, '').trim();
+        if (showTitle) log('[netflix] Method 4 (og:title):', showTitle);
+      }
+    }
+
+    // Cache: remember last successful detection to survive player UI hide/show cycles.
+    // Update cache only when we got fresh data; fall back to cached values otherwise.
+    if (showTitle) {
+      _lastNetflixDetection.title = showTitle;
+      if (episodeInfo) _lastNetflixDetection.episodeInfo = episodeInfo;
+    } else if (_lastNetflixDetection.title) {
+      showTitle = _lastNetflixDetection.title;
+    }
+    if (!episodeInfo && _lastNetflixDetection.episodeInfo) {
+      episodeInfo = _lastNetflixDetection.episodeInfo;
     }
   }
 

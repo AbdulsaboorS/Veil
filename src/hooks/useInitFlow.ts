@@ -9,11 +9,13 @@ interface DetectedShowInfo {
   platform: string;
   showTitle: string;
   episodeInfo?: { season: string; episode: string };
+  url?: string;
 }
 
 const MESSAGES_PREFIX = 'spoilershield-msgs-';
 const SESSIONS_KEY = 'spoilershield-sessions';
 const NO_SHOW_TIMEOUT_MS = 2000;
+const NETFLIX_NO_SHOW_TIMEOUT_MS = 10000; // Netflix player UI is ephemeral — give more time
 
 export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
   const [phase, setPhase] = useState<InitPhase>('detecting');
@@ -45,6 +47,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
 
       let showId: number | undefined;
       let resolvedTitle = showInfo.showTitle;
+      let showSummary: string | undefined;
 
       if (response.ok) {
         const data = await response.json();
@@ -52,6 +55,12 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
           const matched = data[0].show;
           showId = matched.id;
           resolvedTitle = matched.name;
+          if (matched.summary) {
+            showSummary = matched.summary
+              .replace(/<[^>]*>/g, '')
+              .replace(/&nbsp;/g, ' ')
+              .trim();
+          }
         }
       }
 
@@ -59,10 +68,9 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
       const episode = showInfo.episodeInfo?.episode ?? '';
       const hasEpisode = Boolean(season && episode);
 
-      // If TVMaze didn't find the show AND there's no episode info, this is almost
-      // certainly a false positive (e.g. a Crunchyroll browse/home page). Bail out
-      // to no-show rather than prompting the user to enter an episode for a non-show.
-      if (!showId && !hasEpisode) {
+      // If we have no showId, no episode, AND no title → genuine false positive.
+      // Any real detection will have at least a title string.
+      if (!showId && !hasEpisode && !showInfo.showTitle?.trim()) {
         setPhase('no-show');
         return;
       }
@@ -129,7 +137,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
         if (!currentMeta?.context && showId) {
           fetchRecapRef.current(showId, parseInt(season), parseInt(episode), resolvedTitle).then(result => {
             if (result.summary) {
-              sessionStoreRef.current.updateContext(result.summary);
+              sessionStoreRef.current.updateContext(result.summary, sessionId);
             }
           });
         }
@@ -137,7 +145,22 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
         setPhase('ready');
       } else {
         prevEpisodeRef.current = null;
-        setPhase('needs-episode');
+        // Netflix watch pages: go ready even without episode info (it's ephemeral)
+        if (showInfo.platform === 'netflix') {
+          // Use show-level TVMaze summary as context fallback when episode info isn't available
+          if (showSummary) {
+            const allSessions: SessionMeta[] = JSON.parse(
+              window.localStorage.getItem(SESSIONS_KEY) || '[]'
+            );
+            const currentMeta = allSessions.find(s => s.sessionId === sessionId);
+            if (!currentMeta?.context) {
+              sessionStoreRef.current.updateContext(`[Show overview] ${showSummary}`, sessionId);
+            }
+          }
+          setPhase('ready');
+        } else {
+          setPhase('needs-episode');
+        }
       }
     } catch (err) {
       console.error('[SpoilerShield] useInitFlow TVMaze lookup failed:', err);
@@ -160,6 +183,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
         platform?: string;
         showTitle?: string;
         episodeInfo?: { season: string; episode: string };
+        url?: string;
       };
 
       const showTitle = showInfo?.showTitle;
@@ -168,6 +192,20 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
 
       // Home page / non-show page → reset if we were previously on a show
       if (!showTitle) {
+        // Netflix watch pages: title is ephemeral (only in DOM when player UI visible).
+        // Stay in detecting — don't transition to no-show on empty updates; let the timer handle it.
+        // Extend timeout on first Netflix /watch/ signal.
+        if (showInfo?.platform === 'netflix' && showInfo?.url?.includes('/watch/')) {
+          if (detectionTimerRef.current) {
+            clearTimeout(detectionTimerRef.current);
+            detectionTimerRef.current = setTimeout(() => {
+              if (!hasReceivedShowInfo.current) {
+                setPhase('no-show');
+              }
+            }, NETFLIX_NO_SHOW_TIMEOUT_MS);
+          }
+          return;
+        }
         if (lastProcessedKeyRef.current !== null && lastProcessedKeyRef.current !== '') {
           lastProcessedKeyRef.current = '';
           hasReceivedShowInfo.current = false;
@@ -177,8 +215,11 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
         return;
       }
 
-      // Content-based dedup: skip if same show+episode as last processed
-      const key = `${showTitle}|${season}|${episode}`;
+      // Content-based dedup: skip if same show+episode as last processed.
+      // For Netflix: use URL as key since episode info may not be in DOM — URL always changes on navigation.
+      const key = showInfo?.platform === 'netflix'
+        ? `${showTitle}|${showInfo?.url ? new URL(showInfo.url).pathname : ''}`
+        : `${showTitle}|${season}|${episode}`;
       if (lastProcessedKeyRef.current === key) return;
       lastProcessedKeyRef.current = key;
 
@@ -192,6 +233,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
         platform: showInfo?.platform || 'other',
         showTitle,
         episodeInfo: showInfo?.episodeInfo,
+        url: showInfo?.url,
       };
 
       setDetectedShowInfo(info);
@@ -216,7 +258,9 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
     const pollId = setInterval(requestShowInfo, 3000);
     pollIdRef.current = pollId;
 
-    // 2s timeout → no-show
+    // Initial short timeout → no-show (extended for Netflix once platform is known).
+    // The first SPOILERSHIELD_SHOW_INFO message arrives quickly (even if showTitle is empty)
+    // and tells us the platform. For Netflix /watch/ pages we restart with a longer timeout.
     detectionTimerRef.current = setTimeout(() => {
       if (!hasReceivedShowInfo.current) {
         setPhase('no-show');
@@ -253,7 +297,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
     if (!currentMeta?.context && showId && season && episode) {
       fetchRecapRef.current(showId, parseInt(season), parseInt(episode), showTitle).then(result => {
         if (result.summary) {
-          sessionStoreRef.current.updateContext(result.summary);
+          sessionStoreRef.current.updateContext(result.summary, sessionId);
         }
       });
     }

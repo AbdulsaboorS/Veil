@@ -27,7 +27,7 @@ export interface SpoilerReport {
 
 export type ResponseStyle = 'quick' | 'explain' | 'lore';
 export type RefinementOption = 'shorter' | 'detail' | 'examples' | 'terms';
-export type EpisodeSource = 'tvmaze' | 'fandom' | 'websearch' | 'manual' | null;
+export type EpisodeSource = 'tvmaze' | 'anilist' | 'fandom' | 'websearch' | 'manual' | null;
 
 export interface SessionMeta {
   sessionId: string;      // e.g. "42-s1e4" or UUID

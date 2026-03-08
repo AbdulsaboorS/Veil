@@ -161,8 +161,8 @@ export function useSessionStore() {
     });
   }, []);
 
-  const updateContext = useCallback((context: string) => {
-    const currentId = activeSessionIdRef.current;
+  const updateContext = useCallback((context: string, explicitSessionId?: string) => {
+    const currentId = explicitSessionId ?? activeSessionIdRef.current;
     if (!currentId) return;
     setSessions(prev => {
       const updated = prev.map(s =>

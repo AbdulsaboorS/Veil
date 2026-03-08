@@ -43,7 +43,9 @@ async function sendShowInfoToApp() {
 
     // Dedup: only send (and log) when data actually changed.
     const showKey = showInfo
-      ? `${showInfo.showTitle}|${showInfo.platform}|${showInfo.episodeInfo?.season ?? ''}|${showInfo.episodeInfo?.episode ?? ''}`
+      ? showInfo.platform === 'netflix'
+        ? `${showInfo.showTitle}|${showInfo.platform}|${showInfo.url ? new URL(showInfo.url).pathname : ''}`
+        : `${showInfo.showTitle}|${showInfo.platform}|${showInfo.episodeInfo?.season ?? ''}|${showInfo.episodeInfo?.episode ?? ''}`
       : 'none';
     if (showKey === _lastSentShowKey) return;
     _lastSentShowKey = showKey;
