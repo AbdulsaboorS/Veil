@@ -121,7 +121,7 @@ spoiler-shield/
 - **Context pipeline:** Five-tier fallback — TVMaze episode (sanitized) → AniList show overview (sanitized) → Fandom (JJK S1) → Gemini web search → model knowledge. Netflix no-episode path uses TVMaze show-level summary directly (bypasses `fetchRecap`).
 - **Detection:** `background.js` programmatically injects `content.js` on icon click and `tabs.onUpdated` — works on already-open tabs after extension reload. Netflix episode info is unreliable (player UI only); episode dedup uses URL pathname.
 - **Extension build:** `BUILD_TARGET=extension npm run build` compiles `src/` into `extension/app/assets/index.js`. Must run after any `src/` changes.
-- **Audit pass:** Deployed but not wired into `useChat.ts` — re-enable after confirming chat stability.
+- **Audit pass:** Wired and active on the spoiler-risk path (`classify-question` → `audit-answer`). Both functions must be deployed and responding for this path to execute. `classify-question` deployment status should be confirmed before relying on the audit path in production.
 
 ---
 

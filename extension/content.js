@@ -1,98 +1,7 @@
 // Content script: maintains a rolling buffer of subtitle lines and can return it on request.
 
 const BUFFER_MAX_LINES = 40; // ~120 seconds worth, depending on cadence
-const DEV_LOGGING = true; // Set to true for console logging - ENABLED FOR DEBUGGING
-
-// Debug heartbeat: confirm script injection - MUST RUN IMMEDIATELY
-// This log should appear IMMEDIATELY when the script loads
-console.log("[SpoilerShield] ⚡ content.js STARTING");
-console.log("[SpoilerShield] URL:", location.href);
-console.log("[SpoilerShield] Hostname:", location.hostname);
-console.log("[SpoilerShield] User Agent:", navigator.userAgent.substring(0, 50));
-
-(async function debugHeartbeat() {
-  console.log("[SpoilerShield] ✅ content.js LOADED AND RUNNING");
-  console.log("[SpoilerShield] Hostname:", location.hostname);
-
-  try {
-    await chrome.storage.local.set({
-      spoilershield_debug: {
-        ranAt: new Date().toISOString(),
-        url: location.href,
-        locationHost: location.hostname,
-        note: "content.js loaded",
-      },
-    });
-    console.log("[SpoilerShield] ✅ Debug heartbeat stored");
-  } catch (err) {
-    console.error("[SpoilerShield] ❌ debug heartbeat failed:", err);
-  }
-})();
-
-// Diagnostic function - MUST be available immediately (before state is defined)
-window.spoilerShieldDiagnose = function() {
-  console.log("=== SpoilerShield Diagnostic ===");
-  console.log("Script loaded:", typeof window.spoilerShieldDiagnose !== "undefined");
-  console.log("Current URL:", location.href);
-  console.log("Hostname:", location.hostname);
-  
-  // Check if state exists (might not be defined yet)
-  if (typeof state !== "undefined") {
-    console.log("Platform:", state.platform);
-    console.log("Buffer length:", state.buffer.length);
-    console.log("Last line:", state.lastLine);
-    console.log("Last updated:", state.lastUpdatedAt);
-  } else {
-    console.log("⚠️ State not yet initialized");
-  }
-  
-  // Check for video element
-  const video = document.querySelector('video');
-  console.log("Video element found:", !!video);
-  
-  // Check for common subtitle containers
-  const checks = [
-    '.erc-subtitle-text',
-    '[class*="subtitle"]',
-    '[class*="caption"]',
-    '.vjs-text-track',
-    '[aria-live]',
-  ];
-  
-  checks.forEach(sel => {
-    const found = document.querySelectorAll(sel);
-    if (found.length > 0) {
-      console.log(`✓ "${sel}": ${found.length} elements`);
-      found.forEach((el, i) => {
-        if (i < 2) {
-          const text = (el.innerText || el.textContent || '').trim();
-          console.log(`  [${i}] "${text.substring(0, 50)}"`);
-        }
-      });
-    } else {
-      console.log(`✗ "${sel}": 0 elements`);
-    }
-  });
-  
-  // Check storage
-  chrome.storage.local.get('spoilershield_context', (result) => {
-    const ctx = result.spoilershield_context;
-    if (ctx) {
-      console.log("Storage context:", {
-        hasContextText: !!ctx.contextText,
-        contextTextLength: ctx.contextText?.length || 0,
-        hasLines: Array.isArray(ctx.lines),
-        linesCount: ctx.lines?.length || 0,
-        platform: ctx.platform,
-        title: ctx.title,
-      });
-    } else {
-      console.log("✗ No context in storage");
-    }
-  });
-  
-  console.log("=== End Diagnostic ===");
-};
+const DEV_LOGGING = false;
 
 let _lastNetflixDetection = { title: '', episodeInfo: null };
 
@@ -671,7 +580,6 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   
   // Handle re-detect requests
   if (message.type === "REDETECT_SHOW_INFO") {
-    console.log('[SpoilerShield] Re-detect requested, running detection now');
     // Re-run detection immediately
     storeShowInfo();
     sendResponse({ ok: true });

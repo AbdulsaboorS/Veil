@@ -7,6 +7,51 @@ const AUDIT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/audit-answe
 
 const AUTH_HEADER = `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`;
 
+/**
+ * Process complete SSE lines from buffer, calling onChunk for each extracted text chunk.
+ * Returns the remaining (possibly incomplete) buffer after processing.
+ * On JSON parse failure the incomplete line is put back at the front of the buffer.
+ */
+function processStreamBuffer(buffer: string, onChunk: (chunk: string) => void): string {
+  let newlineIndex: number;
+  while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
+    let line = buffer.slice(0, newlineIndex);
+    buffer = buffer.slice(newlineIndex + 1);
+    if (line.endsWith('\r')) line = line.slice(0, -1);
+    if (line.startsWith(':') || line.length === 0) continue;
+    if (!line.startsWith('data: ')) continue;
+    const jsonStr = line.slice(6).trim();
+    try {
+      const parsed = JSON.parse(jsonStr);
+      const chunk = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (chunk) onChunk(chunk);
+    } catch {
+      buffer = line + '\n' + buffer;
+      break;
+    }
+  }
+  return buffer;
+}
+
+/**
+ * Flush remaining buffer after stream ends — parse any leftover complete lines.
+ * JSON parse errors are ignored (incomplete final chunk is discarded).
+ */
+function flushStreamBuffer(buffer: string, onChunk: (chunk: string) => void): void {
+  for (let raw of buffer.split('\n')) {
+    if (!raw) continue;
+    if (raw.endsWith('\r')) raw = raw.slice(0, -1);
+    if (raw.startsWith(':') || raw.length === 0) continue;
+    if (!raw.startsWith('data: ')) continue;
+    const jsonStr = raw.slice(6).trim();
+    try {
+      const parsed = JSON.parse(jsonStr);
+      const chunk = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (chunk) onChunk(chunk);
+    } catch { /* ignore */ }
+  }
+}
+
 /** Simulates streaming by yielding chunks of text with small delays. */
 async function fakeStream(text: string, onChunk: (content: string) => void) {
   const CHUNK = 6;
@@ -125,42 +170,10 @@ export function useChat(storageKey = 'spoilershield-chat') {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
         buffer += decoder.decode(value, { stream: true });
-
-        let newlineIndex: number;
-        while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
-          let line = buffer.slice(0, newlineIndex);
-          buffer = buffer.slice(newlineIndex + 1);
-          if (line.endsWith('\r')) line = line.slice(0, -1);
-          if (line.startsWith(':') || line.trim() === '') continue;
-          if (!line.startsWith('data: ')) continue;
-          const jsonStr = line.slice(6).trim();
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const chunk = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (chunk) collected += chunk;
-          } catch {
-            buffer = line + '\n' + buffer;
-            break;
-          }
-        }
+        buffer = processStreamBuffer(buffer, chunk => { collected += chunk; });
       }
-
-      // Flush remaining buffer
-      for (let raw of buffer.split('\n')) {
-        if (!raw) continue;
-        if (raw.endsWith('\r')) raw = raw.slice(0, -1);
-        if (raw.startsWith(':') || raw.trim() === '') continue;
-        if (!raw.startsWith('data: ')) continue;
-        const jsonStr = raw.slice(6).trim();
-        try {
-          const parsed = JSON.parse(jsonStr);
-          const chunk = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (chunk) collected += chunk;
-        } catch { /* ignore */ }
-      }
-
+      flushStreamBuffer(buffer, chunk => { collected += chunk; });
       return collected;
     };
 
@@ -237,47 +250,16 @@ export function useChat(storageKey = 'spoilershield-chat') {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-
           buffer += decoder.decode(value, { stream: true });
-
-          let newlineIndex: number;
-          while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
-            let line = buffer.slice(0, newlineIndex);
-            buffer = buffer.slice(newlineIndex + 1);
-            if (line.endsWith('\r')) line = line.slice(0, -1);
-            if (line.startsWith(':') || line.trim() === '') continue;
-            if (!line.startsWith('data: ')) continue;
-            const jsonStr = line.slice(6).trim();
-            try {
-              const parsed = JSON.parse(jsonStr);
-              const chunk = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
-              if (chunk) {
-                assistantContent += chunk;
-                updateAssistantMessage(assistantContent);
-              }
-            } catch {
-              buffer = line + '\n' + buffer;
-              break;
-            }
-          }
+          buffer = processStreamBuffer(buffer, chunk => {
+            assistantContent += chunk;
+            updateAssistantMessage(assistantContent);
+          });
         }
-
-        // Flush remaining buffer
-        for (let raw of buffer.split('\n')) {
-          if (!raw) continue;
-          if (raw.endsWith('\r')) raw = raw.slice(0, -1);
-          if (raw.startsWith(':') || raw.trim() === '') continue;
-          if (!raw.startsWith('data: ')) continue;
-          const jsonStr = raw.slice(6).trim();
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const chunk = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (chunk) {
-              assistantContent += chunk;
-              updateAssistantMessage(assistantContent);
-            }
-          } catch { /* ignore */ }
-        }
+        flushStreamBuffer(buffer, chunk => {
+          assistantContent += chunk;
+          updateAssistantMessage(assistantContent);
+        });
 
       } else {
         // ── SPOILER-RISK PATH: collect silently → audit → fake stream ─

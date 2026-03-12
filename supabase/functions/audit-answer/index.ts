@@ -49,13 +49,6 @@ serve(async (req) => {
       );
     }
 
-    if (!context?.trim()) {
-      return new Response(
-        JSON.stringify({ error: "Context is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
     if (!GOOGLE_AI_API_KEY) {
       throw new Error("GOOGLE_AI_API_KEY is not configured");
