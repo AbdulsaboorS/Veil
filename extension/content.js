@@ -180,13 +180,8 @@ function detectCrunchyrollShowInfo() {
 
 // Extract Netflix show info from page.
 // Reads/writes _lastNetflixDetection module-level cache to survive player UI hide/show cycles.
+// Only call this when already on a /watch/ URL — gate is in detectShowInfo().
 function detectNetflixShowInfo() {
-  // Gate: only detect on /watch/ URLs
-  if (!/^\/watch\//.test(location.pathname)) {
-    _lastNetflixDetection = { title: '', episodeInfo: null };
-    return { showTitle: '', episodeInfo: null, earlyReturn: true };
-  }
-
   let showTitle = '';
   let episodeInfo = null;
 
@@ -263,9 +258,13 @@ function detectShowInfo() {
   }
 
   if (platform === 'netflix') {
-    const result = detectNetflixShowInfo();
-    if (result.earlyReturn) return { ...base, showTitle: '', episodeInfo: null };
-    return { ...base, showTitle: result.showTitle, episodeInfo: result.episodeInfo };
+    // Gate: only detect on /watch/ URLs; clear stale cache on other Netflix pages.
+    if (!/^\/watch\//.test(location.pathname)) {
+      _lastNetflixDetection = { title: '', episodeInfo: null };
+      return { ...base, showTitle: '', episodeInfo: null };
+    }
+    const { showTitle, episodeInfo } = detectNetflixShowInfo();
+    return { ...base, showTitle, episodeInfo };
   }
 
   return { ...base, showTitle: '', episodeInfo: null };

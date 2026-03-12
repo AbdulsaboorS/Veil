@@ -15,7 +15,7 @@ function stripHtml(html: string): string {
 }
 
 /** Build a JSON response with CORS headers. */
-function okJson(body: object, cors: Record<string, string>): Response {
+function okJson(body: Record<string, unknown>, cors: Record<string, string>): Response {
   return new Response(JSON.stringify(body), {
     headers: { ...cors, "Content-Type": "application/json" },
   });
