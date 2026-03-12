@@ -3,7 +3,7 @@
   "name": "SpoilerShield Side Panel",
   "version": "0.2.0",
   "description": "Opens SpoilerShield in a Chrome Side Panel and prefills recent subtitles as context.",
-  "permissions": ["storage", "sidePanel", "activeTab", "scripting", "tabs"],
+  "permissions": ["storage", "sidePanel", "activeTab", "scripting", "tabs", "webNavigation"],
   "host_permissions": [
     "https://*.crunchyroll.com/*",
     "https://crunchyroll.com/*",

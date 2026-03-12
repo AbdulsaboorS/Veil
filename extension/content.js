@@ -392,11 +392,37 @@ async function storeShowInfo() {
     subtree: true,
   });
 
+  // Watch <head> for title changes — Netflix may replace the entire <title> element
+  // (SPA hydration), which would orphan an observer on the original element instance.
+  // Observing <head> catches both in-place text mutations and full element replacements.
+  let _lastDocTitle = document.title;
+  new MutationObserver(() => {
+    if (document.title !== _lastDocTitle) {
+      _lastDocTitle = document.title;
+      storeShowInfo();
+    }
+  }).observe(document.head || document.documentElement, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+  });
+
+  // Belt-and-suspenders: retry detection after load to catch async title updates
+  // regardless of observer mechanics (e.g. Netflix movie pages).
+  [1000, 2000, 3000].forEach(ms => setTimeout(storeShowInfo, ms));
+
   // Also detect on navigation (for SPAs)
   let lastUrl = location.href;
   setInterval(() => {
     if (location.href !== lastUrl) {
       lastUrl = location.href;
+      // Clear cached episode info on URL change so stale episode doesn't persist
+      // after SPA nav (e.g. Netflix "Next Episode"). Also clear title so a stale
+      // TV show name doesn't bleed into a subsequent movie page (different content).
+      if (state.platform === 'netflix') {
+        _lastNetflixDetection.episodeInfo = null;
+        _lastNetflixDetection.title = '';
+      }
       storeShowInfo();
     }
   }, 2000);

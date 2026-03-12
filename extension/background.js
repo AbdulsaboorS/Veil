@@ -36,6 +36,18 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 });
 
+// Netflix / SPA navigation: history.pushState fires onHistoryStateUpdated, not tabs.onUpdated.
+// Send REDETECT_SHOW_INFO immediately so content.js runs detection while the
+// player overlay (episode info) may still be visible.
+chrome.webNavigation.onHistoryStateUpdated.addListener(async (details) => {
+  if (details.frameId !== 0) return; // main frame only
+  try {
+    await chrome.tabs.sendMessage(details.tabId, { type: 'REDETECT_SHOW_INFO' });
+  } catch {
+    // Tab may not have content script (e.g. non-matching page) — ignore
+  }
+}, { url: [{ hostContains: 'netflix.com' }] });
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!message || typeof message !== "object") return;
 

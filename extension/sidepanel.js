@@ -113,7 +113,6 @@ async function sendContextToApp() {
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName !== 'local') return;
   if (changes.spoilershield_show_info) {
-    _lastSentShowKey = undefined; // reset dedup so new value always gets sent
     sendShowInfoToApp();
   }
   if (changes.spoilershield_context) {
