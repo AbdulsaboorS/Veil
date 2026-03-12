@@ -48,21 +48,3 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(async (details) => {
   }
 }, { url: [{ hostContains: 'netflix.com' }] });
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (!message || typeof message !== "object") return;
-
-  if (message.type === "CONTEXT_UPDATE") {
-    const tabId = sender?.tab?.id;
-    if (!tabId) return;
-
-    const record = message.record;
-    chrome.storage.local
-      .set({
-        [`context:${tabId}`]: record,
-      })
-      .then(() => sendResponse({ ok: true }))
-      .catch(() => sendResponse({ ok: false }));
-
-    return true; // async
-  }
-});

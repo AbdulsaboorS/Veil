@@ -23,16 +23,9 @@ async function fetchContextForTab(tabId) {
     const resp = await chrome.tabs.sendMessage(tabId, { type: "GET_CONTEXT" });
     if (resp?.ok && resp.record) return resp.record;
   } catch {
-    // fall back to stored record
+    // content script not ready or tab not injectable
   }
-
-  try {
-    const key = `context:${tabId}`;
-    const obj = await chrome.storage.local.get(key);
-    return obj?.[key] || null;
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 // Send detected show info to the React app via window.postMessage
