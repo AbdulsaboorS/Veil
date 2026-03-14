@@ -16,6 +16,7 @@ const MESSAGES_PREFIX = 'spoilershield-msgs-';
 const SESSIONS_KEY = 'spoilershield-sessions';
 const NO_SHOW_TIMEOUT_MS = 2000;
 const NETFLIX_NO_SHOW_TIMEOUT_MS = 10000; // Netflix player UI is ephemeral — give more time
+const NO_SHOW_GRACE_MS = 8000; // Grace period before resetting on empty show signal
 
 export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
   const [phase, setPhase] = useState<InitPhase>('detecting');
@@ -30,6 +31,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
   const detectionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pollIdRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const prevEpisodeRef = useRef<{ season: string; episode: string; sessionId: string } | null>(null);
+  const noShowGraceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Latest-ref pattern: updated synchronously each render so callbacks can read
   // current values without listing them as deps (avoids identity churn → no loop).
@@ -39,30 +41,37 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
   fetchRecapRef.current = fetchRecap;
 
   const doTVMazeLookupAndCreateSession = useCallback(async (showInfo: DetectedShowInfo) => {
-    console.count('[SS] TVMaze lookup call');
     try {
-      const response = await fetch(
-        `https://api.tvmaze.com/search/shows?q=${encodeURIComponent(showInfo.showTitle)}`
-      );
-
-      let showId: number | undefined;
-      let resolvedTitle = showInfo.showTitle;
-      let showSummary: string | undefined;
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.length > 0) {
-          const matched = data[0].show;
-          showId = matched.id;
-          resolvedTitle = matched.name;
-          if (matched.summary) {
-            showSummary = matched.summary
-              .replace(/<[^>]*>/g, '')
-              .replace(/&nbsp;/g, ' ')
-              .trim();
-          }
-        }
+      // Extract Netflix content ID from URL: /watch/81091879 → '81091879'
+      let netflixContentId: string | undefined;
+      if (showInfo.platform === 'netflix' && showInfo.url) {
+        try {
+          const parts = new URL(showInfo.url).pathname.split('/');
+          const segment = parts[2]; // ['', 'watch', '81091879'][2]
+          if (segment && /^\d+$/.test(segment)) netflixContentId = segment;
+        } catch { /* invalid URL — ignore */ }
       }
+
+      const kbResponse = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-show-context`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            showTitle: showInfo.showTitle,
+            platform: showInfo.platform,
+            netflixContentId,
+          }),
+        }
+      );
+      const kbData = kbResponse.ok ? await kbResponse.json() : null;
+      const showId: number | undefined = kbData?.tvmazeId ?? undefined;
+      const resolvedTitle: string = kbData?.resolvedTitle ?? showInfo.showTitle;
+      // showSummary: used for Netflix no-episode path (show-level context from KB)
+      const showSummary: string | undefined = kbData?.context ?? undefined;
 
       const season = showInfo.episodeInfo?.season ?? '';
       const episode = showInfo.episodeInfo?.episode ?? '';
@@ -168,6 +177,46 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
     }
   }, []); // stable identity — reads latest store/fetchRecap via refs
 
+  // Session-first initialization: if a confirmed session already exists when the panel
+  // opens (e.g. user closed and reopened), skip the detecting/resolving cycle and jump
+  // straight to ready. Pre-seeding lastProcessedKeyRef prevents the first incoming show
+  // info message from triggering doTVMazeLookupAndCreateSession for the same show.
+  //
+  // Uses [] deps (not [isSidePanel]) to run exactly once on mount — isSidePanel is
+  // checked inline. This prevents double-seeding if isSidePanel transitions after mount.
+  //
+  // Caveat: if content.js returns a different title than what's stored (title drift),
+  // the pre-seeded key won't match and doTVMazeLookupAndCreateSession will fire once —
+  // this is acceptable (one extra get-show-context call, no incorrect behavior).
+  //
+  // Netflix: episode-based key format won't match the URL-based key the listener uses,
+  // so Netflix will still run one detection cycle on reopen. Acceptable given limited
+  // Netflix support in v1.
+  useEffect(() => {
+    if (!isSidePanel) return;
+    const active = sessionStoreRef.current.activeSession;
+    if (!active?.meta?.showTitle) return;
+
+    const { showTitle, season, episode, platform, sessionId, context, showId } = active.meta;
+
+    lastProcessedKeyRef.current = `${showTitle}|${season}|${episode}`;
+    hasReceivedShowInfo.current = true;
+    if (season && episode) {
+      prevEpisodeRef.current = { season, episode, sessionId };
+    }
+    setDetectedShowInfo({ platform, showTitle, episodeInfo: season && episode ? { season, episode } : undefined });
+    setPhase('ready');
+
+    // Retry recap fetch if context was never populated (e.g. previous network error).
+    if (!context && showId && season && episode) {
+      fetchRecapRef.current(showId, parseInt(season), parseInt(episode), showTitle).then(result => {
+        if (result.summary) {
+          sessionStoreRef.current.updateContext(result.summary, sessionId);
+        }
+      });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Set up message listener (side panel only)
   useEffect(() => {
     if (!isSidePanel) return;
@@ -190,15 +239,18 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
       const season = showInfo?.episodeInfo?.season ?? '';
       const episode = showInfo?.episodeInfo?.episode ?? '';
 
-      // Home page / non-show page → reset if we were previously on a show
+      // Home page / non-show page → apply grace period before resetting
       if (!showTitle) {
         // Netflix watch pages: title is ephemeral (only in DOM when player UI visible).
         // Stay in detecting — don't transition to no-show on empty updates; let the timer handle it.
         // Extend timeout on first Netflix /watch/ signal.
+        // Note: if platform === 'netflix' but url lacks '/watch/' (e.g. Netflix homepage),
+        // we intentionally fall through to the grace timer below — correct behavior.
         if (showInfo?.platform === 'netflix' && showInfo?.url?.includes('/watch/')) {
           if (detectionTimerRef.current) {
             clearTimeout(detectionTimerRef.current);
             detectionTimerRef.current = setTimeout(() => {
+              detectionTimerRef.current = null;
               if (!hasReceivedShowInfo.current) {
                 setPhase('no-show');
               }
@@ -206,13 +258,31 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
           }
           return;
         }
+
+        // Was tracking a show — apply grace period before resetting.
+        // Covers brief navigation to homepage/browse within the streaming platform.
+        // If a valid show title arrives before NO_SHOW_GRACE_MS, the timer is cancelled.
         if (lastProcessedKeyRef.current !== null && lastProcessedKeyRef.current !== '') {
-          lastProcessedKeyRef.current = '';
-          hasReceivedShowInfo.current = false;
-          setDetectedShowInfo(null);
-          setPhase('no-show');
+          lastProcessedKeyRef.current = ''; // allow re-entry when valid show returns
+          if (!noShowGraceRef.current) {
+            noShowGraceRef.current = setTimeout(() => {
+              noShowGraceRef.current = null;
+              // Guard against requestRedetect() setting key to null mid-flight
+              if (lastProcessedKeyRef.current === '' || lastProcessedKeyRef.current === null) {
+                hasReceivedShowInfo.current = false;
+                setDetectedShowInfo(null);
+                setPhase('no-show');
+              }
+            }, NO_SHOW_GRACE_MS);
+          }
         }
         return;
+      }
+
+      // Valid show title arrived — cancel any pending no-show grace reset
+      if (noShowGraceRef.current) {
+        clearTimeout(noShowGraceRef.current);
+        noShowGraceRef.current = null;
       }
 
       // Content-based dedup: skip if same show+episode as last processed.
@@ -262,6 +332,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
     // The first SPOILERSHIELD_SHOW_INFO message arrives quickly (even if showTitle is empty)
     // and tells us the platform. For Netflix /watch/ pages we restart with a longer timeout.
     detectionTimerRef.current = setTimeout(() => {
+      detectionTimerRef.current = null;
       if (!hasReceivedShowInfo.current) {
         setPhase('no-show');
       }
@@ -271,9 +342,8 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
       window.removeEventListener('message', onMessage);
       clearInterval(pollId);
       pollIdRef.current = null;
-      if (detectionTimerRef.current) {
-        clearTimeout(detectionTimerRef.current);
-      }
+      if (detectionTimerRef.current) clearTimeout(detectionTimerRef.current);
+      if (noShowGraceRef.current) clearTimeout(noShowGraceRef.current);
     };
   }, [isSidePanel]); // doTVMazeLookupAndCreateSession is stable ([] deps) — safe to omit
 
@@ -309,6 +379,11 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
   /** Re-request show info from extension */
   const requestRedetect = useCallback(() => {
     lastProcessedKeyRef.current = null;  // allow re-processing same show/episode
+    // Cancel any pending grace timer — explicit redetect supersedes it
+    if (noShowGraceRef.current) {
+      clearTimeout(noShowGraceRef.current);
+      noShowGraceRef.current = null;
+    }
     setIsDetecting(true);
     setPhase('detecting');
     hasReceivedShowInfo.current = false;
@@ -324,6 +399,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
 
     if (detectionTimerRef.current) clearTimeout(detectionTimerRef.current);
     detectionTimerRef.current = setTimeout(() => {
+      detectionTimerRef.current = null;
       if (!hasReceivedShowInfo.current) {
         setPhase('no-show');
         setIsDetecting(false);
