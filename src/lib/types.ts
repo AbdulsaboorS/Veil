@@ -16,6 +16,7 @@ export interface ChatMessage {
   style?: 'quick' | 'explain' | 'lore';
   audited?: boolean;
   wasModified?: boolean;
+  isSpoilerBlocked?: boolean;
 }
 
 export interface SpoilerReport {

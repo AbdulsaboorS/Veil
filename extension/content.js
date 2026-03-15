@@ -163,6 +163,13 @@ function detectCrunchyrollShowInfo() {
     .replace(/\s+S\d+\s*E\d+.*/i, '')
     .trim();
 
+  // Reject Crunchyroll browse/marketing page phrases that appear during SPA
+  // transitions — these are not show names (e.g. "Most Popular Anime Shows and
+  // Movies on Crunchyroll" appears briefly when the player re-renders).
+  if (/\bmost popular\b/i.test(showTitle) || /\banime shows and movies\b/i.test(showTitle)) {
+    showTitle = '';
+  }
+
   // Episode info from full page title (if not found yet)
   if (!episodeInfo) {
     episodeInfo = parseEpisodeText(document.title || '');

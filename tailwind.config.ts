@@ -119,6 +119,12 @@ export default {
           "0%, 100%": { opacity: "0.5", transform: "scale(1)" },
           "50%": { opacity: "1", transform: "scale(1.25)" },
         },
+        // Spring pop for the Spoiler Blocked badge
+        "shield-pop": {
+          "0%": { opacity: "0", transform: "scale(0.7) translateY(4px)" },
+          "70%": { transform: "scale(1.08) translateY(-1px)" },
+          "100%": { opacity: "1", transform: "scale(1) translateY(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -129,6 +135,7 @@ export default {
         "bubble-pop": "bubble-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
         "dot-bounce": "dot-bounce 1.2s ease-in-out infinite",
         breathe: "breathe 3s ease-in-out infinite",
+        "shield-pop": "shield-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
       },
     },
   },

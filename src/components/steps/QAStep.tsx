@@ -98,8 +98,8 @@ export function QAStep({
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex animate-bubble-pop ${
-                  msg.role === 'user' ? 'justify-end' : 'justify-start'
+                className={`flex flex-col animate-bubble-pop ${
+                  msg.role === 'user' ? 'items-end' : 'items-start'
                 }`}
               >
                 <div
@@ -111,6 +111,18 @@ export function QAStep({
                 >
                   {msg.content}
                 </div>
+                {msg.role === 'assistant' && msg.isSpoilerBlocked && (
+                  <span
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium mt-1.5 animate-shield-pop pointer-events-none select-none"
+                    style={{
+                      background: 'linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(var(--primary) / 0.1))',
+                      border: '1px solid hsl(var(--primary) / 0.3)',
+                      color: 'hsl(var(--primary))',
+                    }}
+                  >
+                    🛡️ Spoiler Blocked
+                  </span>
+                )}
               </div>
             ))}
 

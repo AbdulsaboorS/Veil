@@ -289,6 +289,13 @@ export function useChat(storageKey = 'spoilershield-chat') {
         // Fake-stream the final (audited) answer
         if (finalContent.trim()) {
           await fakeStream(finalContent, updateAssistantMessage);
+          // Post-stream: stamp the last assistant message as spoiler-blocked so
+          // the badge animates in as punctuation after the full response is visible.
+          setMessages(prev => {
+            const idx = prev.findLastIndex(m => m.role === 'assistant');
+            if (idx === -1) return prev;
+            return prev.map((m, i) => i === idx ? { ...m, isSpoilerBlocked: true } : m);
+          });
         }
       }
 
