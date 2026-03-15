@@ -171,16 +171,20 @@ After making changes, run this quick manual check to catch regressions:
 | Netflix content ID not used for fast DB lookup | **Fixed 2026-03-08** — Phase 2: `useInitFlow` extracts `netflixContentId` from URL and forwards to `get-show-context`; Step 0 fast-path returns O(1) cached result; mapping written on all cold/warm paths. |
 | Netflix episode not updating on "Next Episode" click | **Fix in progress** — Added `chrome.webNavigation.onHistoryStateUpdated` listener in `background.js` (Netflix only) + `"webNavigation"` permission in manifest. Sends `REDETECT_SHOW_INFO` immediately on pushState nav. Awaiting user confirmation. |
 | Netflix movies cause infinite "Detecting..." loop | **Fix in progress** — Replaced orphaned `<title>` element observer with `document.head` observer + 1s/2s/3s retry polling. Awaiting user confirmation. |
+| Panel re-detection on open/close | **Fixed 2026-03-15** — Session-first init in `useInitFlow.ts` jumps to `ready` instantly if active session exists. 8s grace period prevents reset on brief navigation away. |
+| Crunchyroll SPA title "Most Popular Anime S..." overriding session | **Fixed 2026-03-15** — `content.js` filters out known Crunchyroll browse/marketing titles before storing. |
+| Spoiler refusal classification labels showing in chat | **Fixed 2026-03-15** — System prompt updated to classify silently. |
+| Spoiler blocked badge animation | **Done 2026-03-15** — `🛡️ Spoiler Blocked` badge with spring-pop animation appears after spoiler-risk responses. |
 
 ---
 
 ## 8. Upcoming Work (Prioritized)
 
-1. **Fix Netflix SPA navigation** – Fix in progress (webNavigation listener added). Confirm working, then close out.
-2. **Fix Netflix movie scraping** – Fix in progress (head observer + retry polling). Confirm working, then close out.
-3. **Add `season`/`episode` to `id_mappings`** – DB migration to store episode-level Netflix content ID mappings. After fixing SPA nav so episode info flows correctly, persist it so future users get O(1) episode resolution too.
-4. **Netflix subtitle context** – content.js already captures subtitle lines into `spoilershield_context`. Wire this into the chat context pipeline so the model knows where in the episode the user currently is.
-5. **Chrome Web Store submission** – Prep store listing (description, screenshots, privacy policy).
+1. **Chrome Web Store submission** – Highest priority for launch. Prep store listing, description, screenshots, privacy policy.
+2. **Fix Netflix SPA navigation** – Fix in progress (webNavigation listener added). Confirm working, then close out.
+3. **Fix Netflix movie scraping** – Fix in progress (head observer + retry polling). Confirm working, then close out.
+4. **Add `season`/`episode` to `id_mappings`** – DB migration to store episode-level Netflix content ID mappings. After fixing SPA nav so episode info flows correctly, persist it so future users get O(1) episode resolution too.
+5. **Netflix subtitle context** – content.js already captures subtitle lines into `spoilershield_context`. Wire this into the chat context pipeline so the model knows where in the episode the user currently is.
 6. **Re-enable audit pass** – Wire `audit-answer` in `useChat.ts` after streaming; show "Safety edit applied" when answer is modified.
 7. **Polish StatusBadge popover** – Show names truncate at 18 chars in badge; full name visible in popover.
 

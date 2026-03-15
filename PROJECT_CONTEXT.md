@@ -65,7 +65,7 @@ No wizard, no confirmation steps. The panel opens to chat.
   - **Fandom wiki** – Jujutsu Kaisen S1 episode pages (hardcoded URL patterns)
   - **Google Generative AI** – all LLM calls via native Gemini API (`GOOGLE_AI_API_KEY` Supabase secret)
     - Chat + audit: `gemini-3-flash-preview` (streaming)
-    - Web search recap + sanitization: `gemini-2.0-flash` (non-streaming; Search Grounding supported)
+    - Web search recap + sanitization: `gemini-3-flash-preview` (non-streaming; Search Grounding supported)
 
 ### 2.2 Data Flow (Side Panel Q&A)
 
@@ -228,6 +228,13 @@ See **ROADMAP.md** for desired future state and feature ideas.
 ## 7. Change Log (High-Level)
 
 > Keep this ordered **newest first**. Each entry should be 1–3 bullet points.
+
+### 2026‑03‑08 (Phase 2: Netflix Content ID Mapping)
+
+- **Netflix fast-path lookup:** `get-show-context` now accepts `netflixContentId`. Step 0 does an O(1) `id_mappings` lookup before any TVMaze/AniList calls — returns `confidence: "cached"` instantly for returning users.
+- **Mapping write-through:** Netflix content ID is written to `id_mappings` on all paths: Step 1 early-return (show already in DB via title/tvmazeId), and Step 2h lazy-populate (cold start). All subsequent Netflix users on the same title skip all external API calls.
+- **Title-absent validation fix:** `showTitle` is now optional when `netflixContentId` is present (handles the case where Netflix player DOM hasn't rendered the title yet). Canonical `resolvedTitle` from DB is returned in response.
+- **`useInitFlow` wired:** Extracts `netflixContentId` from `/watch/{id}` URL segment and forwards it to `get-show-context`. Non-Netflix requests are unaffected.
 
 ### 2026‑02‑23
 
