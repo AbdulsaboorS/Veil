@@ -15,18 +15,18 @@ interface ChatPanelProps {
   messages: ChatMessageType[];
   isLoading: boolean;
   error: string | null;
-  onSendMessage: (message: string, style: ResponseStyle) => void;
-  onRefine: (refinement: RefinementOption) => void;
+  onSendMessage: (message: string) => void;
+  onRefine?: (refinement: RefinementOption) => void;
   watchSetup: WatchSetup;
 }
 
-export function ChatPanel({ 
-  messages, 
-  isLoading, 
-  error, 
-  onSendMessage, 
+export function ChatPanel({
+  messages,
+  isLoading,
+  error,
+  onSendMessage,
   onRefine,
-  watchSetup 
+  watchSetup
 }: ChatPanelProps) {
   const isSidePanel = useSidePanel();
   const [input, setInput] = useState('');
@@ -43,7 +43,7 @@ export function ChatPanel({
     e.preventDefault();
     if (!input.trim() || isLoading) return;
     
-    onSendMessage(input.trim(), style);
+    onSendMessage(input.trim());
     setInput('');
   };
 
@@ -122,7 +122,7 @@ export function ChatPanel({
                 </div>
               )}
               {/* Refinement buttons - shown after answer exists */}
-              {showRefinement && (
+              {showRefinement && onRefine && (
                 <div className="pt-2">
                   <RefinementButtons onRefine={onRefine} disabled={isLoading} />
                 </div>
@@ -221,7 +221,7 @@ export function ChatPanel({
       </div>
 
       {/* Refinement buttons */}
-      {showRefinement && (
+      {showRefinement && onRefine && (
         <div className="px-4 pb-2">
           <RefinementButtons onRefine={onRefine} disabled={isLoading} />
         </div>

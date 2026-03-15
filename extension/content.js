@@ -128,10 +128,13 @@ function detectCrunchyrollShowInfo() {
 
   // Method 4: Page title — Crunchyroll uses "Episode Title | Show Name | Crunchyroll"
   // Split on "|" and find the show name segment (last non-"Crunchyroll" part).
+  // Filter on /^crunchyroll\b/i (not just exact match) to also catch transitional titles
+  // like "Crunchyroll: Watch Popular Anime, Play Games & Shop Online" that appear during
+  // SPA navigation before the real episode title loads.
   if (!showTitle && isContentPath) {
     const pageTitle = document.title || '';
     const parts = pageTitle.split('|').map(p => p.trim()).filter(Boolean);
-    const nonCR = parts.filter(p => !/^crunchyroll$/i.test(p));
+    const nonCR = parts.filter(p => !/^crunchyroll\b/i.test(p));
     if (nonCR.length >= 2) {
       // "Episode Title | Show Name" → take the last part
       showTitle = nonCR[nonCR.length - 1];
@@ -149,7 +152,7 @@ function detectCrunchyrollShowInfo() {
     const content = ogTitle?.getAttribute('content') || '';
     if (content) {
       const parts = content.split('|').map(p => p.trim()).filter(Boolean);
-      const nonCR = parts.filter(p => !/^crunchyroll$/i.test(p));
+      const nonCR = parts.filter(p => !/^crunchyroll\b/i.test(p));
       showTitle = (nonCR.length >= 2 ? nonCR[nonCR.length - 1] : nonCR[0] || '');
       if (!showTitle) showTitle = content.split(/[–—\-|]/)[0].trim();
       if (showTitle) log('[detect] Method 5 (og:title):', showTitle, '| og:title was:', content);
@@ -166,7 +169,14 @@ function detectCrunchyrollShowInfo() {
   // Reject Crunchyroll browse/marketing page phrases that appear during SPA
   // transitions — these are not show names (e.g. "Most Popular Anime Shows and
   // Movies on Crunchyroll" appears briefly when the player re-renders).
-  if (/\bmost popular\b/i.test(showTitle) || /\banime shows and movies\b/i.test(showTitle)) {
+  // Also reject anything that still starts with "Crunchyroll" after the pipe-split
+  // (e.g. "Crunchyroll: Watch Popular Anime, Play Games & Shop Online" when no
+  // pipe-separated segments were found).
+  if (
+    /\bmost popular\b/i.test(showTitle) ||
+    /\banime shows and movies\b/i.test(showTitle) ||
+    /^crunchyroll\b/i.test(showTitle)
+  ) {
     showTitle = '';
   }
 

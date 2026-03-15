@@ -18,3 +18,9 @@ verify_jwt = false
 
 [functions."fetch-web-episode-recap"]
 verify_jwt = false
+
+[functions."classify-question"]
+verify_jwt = false
+
+[functions."get-show-context"]
+verify_jwt = false
