@@ -20,13 +20,24 @@ export function ChatStatusBar({ meta, isLoadingRecap, phase }: ChatStatusBarProp
     );
   }
 
-  // Loading recap — amber communicates "in progress", keep the box
+  // Loading recap — episode is already known, show the boundary immediately
+  // with a spinner to signal we're still enriching context in the background.
   if (isLoadingRecap) {
+    if (meta?.season && meta?.episode) {
+      return (
+        <div className="flex items-center gap-1.5 px-1 py-0.5">
+          <Loader2 className="w-2.5 h-2.5 text-primary/50 animate-spin shrink-0" />
+          <span className="text-xs text-muted-foreground/70">
+            Shielding up to S{meta.season} E{meta.episode}
+          </span>
+        </div>
+      );
+    }
     return (
-      <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
-        <Loader2 className="w-3 h-3 text-amber-400 animate-spin shrink-0" />
-        <span className="text-xs text-amber-300/80 font-medium">
-          Fetching episode recap…
+      <div className="flex items-center gap-1.5 px-1 py-0.5">
+        <Loader2 className="w-2.5 h-2.5 text-primary/50 animate-spin shrink-0" />
+        <span className="text-xs text-muted-foreground/70">
+          Setting up shield…
         </span>
       </div>
     );

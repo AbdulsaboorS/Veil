@@ -24,7 +24,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
   const [isDetecting, setIsDetecting] = useState(false);
 
   const isSidePanel = useSidePanel();
-  const { fetchRecap } = useEpisodeRecap();
+  const { fetchRecap, isLoading: isLoadingRecap } = useEpisodeRecap();
 
   const hasReceivedShowInfo = useRef(false);
   const lastProcessedKeyRef = useRef<string | null>(null);
@@ -411,6 +411,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
     phase,
     detectedShowInfo,
     isDetecting,
+    isLoadingRecap,
     confirmManualSetup,
     requestRedetect,
   };

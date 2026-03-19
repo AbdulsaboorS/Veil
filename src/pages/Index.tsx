@@ -7,7 +7,6 @@ import { HistorySheet } from '@/components/HistorySheet';
 import { useChat } from '@/hooks/useChat';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useSidePanel } from '@/hooks/useSidePanel';
-import { useEpisodeRecap } from '@/hooks/useEpisodeRecap';
 import { useSessionStore } from '@/hooks/useSessionStore';
 import { useInitFlow } from '@/hooks/useInitFlow';
 import { WatchSetup } from '@/lib/types';
@@ -80,8 +79,7 @@ const defaultSetup: WatchSetup = {
 
 function SidePanelApp() {
   const sessionStore = useSessionStore();
-  const { phase, isDetecting, confirmManualSetup, requestRedetect } = useInitFlow(sessionStore);
-  const { isLoading: isLoadingRecap } = useEpisodeRecap();
+  const { phase, isDetecting, isLoadingRecap, confirmManualSetup, requestRedetect } = useInitFlow(sessionStore);
 
   // Warm-ping: fire both edge functions as soon as the panel opens so they're
   // hot by the time the user asks their first question.
