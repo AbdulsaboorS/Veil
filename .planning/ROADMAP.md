@@ -27,7 +27,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Extension icon in the Chrome toolbar shows the Veil icon (veil-icon.svg)
   3. A user upgrading from a prior install retains all chat history and session data (localStorage keys migrated without data loss)
   4. postMessage communication between sidepanel, content.js, and React app uses VEIL_* message types without errors
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Rename extension layer: manifest name/description, chrome.storage keys (content.js + sidepanel.js), postMessage types (sidepanel.js), console prefixes, index.html title
+- [ ] 01-02-PLAN.md — Rename React src/ layer: localStorage key constants + migration, postMessage types (useInitFlow), custom DOM event, UI strings (Header, ShieldBadge), system prompt identity, test files
+- [ ] 01-03-PLAN.md — Generate Veil PNG icons from veil-icon.svg, rebuild extension bundle, human verify icon and UI
 
 ### Phase 2: Subtitle Context
 **Goal**: The chat model knows where in the episode the user currently is, via the rolling subtitle buffer captured by content.js
@@ -57,6 +62,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Rebrand | 0/? | Not started | - |
+| 1. Rebrand | 0/3 | Not started | - |
 | 2. Subtitle Context | 0/? | Not started | - |
 | 3. Web Store Launch | 0/? | Not started | - |
