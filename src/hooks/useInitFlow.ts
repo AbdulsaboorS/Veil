@@ -12,8 +12,8 @@ interface DetectedShowInfo {
   url?: string;
 }
 
-const MESSAGES_PREFIX = 'spoilershield-msgs-';
-const SESSIONS_KEY = 'spoilershield-sessions';
+const MESSAGES_PREFIX = 'veil-msgs-';
+const SESSIONS_KEY = 'veil-sessions';
 const NO_SHOW_TIMEOUT_MS = 2000;
 const NETFLIX_NO_SHOW_TIMEOUT_MS = 10000; // Netflix player UI is ephemeral — give more time
 const NO_SHOW_GRACE_MS = 8000; // Grace period before resetting on empty show signal
@@ -119,7 +119,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
                 const combined = [...oldMsgs, separator];
                 window.localStorage.setItem(newKey, JSON.stringify(combined));
                 window.dispatchEvent(
-                  new CustomEvent('spoilershield-messages-updated', { detail: { key: newKey } })
+                  new CustomEvent('veil-messages-updated', { detail: { key: newKey } })
                 );
               }
             } catch {}
@@ -172,7 +172,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
         }
       }
     } catch (err) {
-      console.error('[SpoilerShield] useInitFlow TVMaze lookup failed:', err);
+      console.error('[Veil] useInitFlow TVMaze lookup failed:', err);
       setPhase('error');
     }
   }, []); // stable identity — reads latest store/fetchRecap via refs
@@ -226,7 +226,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
       if (!data || typeof data !== 'object') return;
 
       const maybe = data as { type?: unknown; payload?: unknown };
-      if (maybe.type !== 'SPOILERSHIELD_SHOW_INFO') return;
+      if (maybe.type !== 'VEIL_SHOW_INFO') return;
 
       const showInfo = maybe.payload as {
         platform?: string;
@@ -317,7 +317,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
 
     // Request show info from extension — sidepanel.js listens on the same window
     const requestShowInfo = () => {
-      window.postMessage({ type: 'SPOILERSHIELD_REQUEST_SHOW_INFO' }, '*');
+      window.postMessage({ type: 'VEIL_REQUEST_SHOW_INFO' }, '*');
     };
 
     requestShowInfo();
@@ -329,7 +329,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
     pollIdRef.current = pollId;
 
     // Initial short timeout → no-show (extended for Netflix once platform is known).
-    // The first SPOILERSHIELD_SHOW_INFO message arrives quickly (even if showTitle is empty)
+    // The first VEIL_SHOW_INFO message arrives quickly (even if showTitle is empty)
     // and tells us the platform. For Netflix /watch/ pages we restart with a longer timeout.
     detectionTimerRef.current = setTimeout(() => {
       detectionTimerRef.current = null;
@@ -388,9 +388,9 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
     setPhase('detecting');
     hasReceivedShowInfo.current = false;
 
-    window.postMessage({ type: 'SPOILERSHIELD_REQUEST_REDETECT' }, '*');
+    window.postMessage({ type: 'VEIL_REQUEST_REDETECT' }, '*');
     const req = () => {
-      window.postMessage({ type: 'SPOILERSHIELD_REQUEST_SHOW_INFO' }, '*');
+      window.postMessage({ type: 'VEIL_REQUEST_SHOW_INFO' }, '*');
     };
     req();
     setTimeout(req, 500);
