@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "SpoilerShield Side Panel",
+  "name": "Veil",
   "version": "0.2.0",
-  "description": "Opens SpoilerShield in a Chrome Side Panel and prefills recent subtitles as context.",
+  "description": "Ask anything about what you're watching — get answers without spoilers.",
   "permissions": ["storage", "sidePanel", "activeTab", "scripting", "tabs", "webNavigation"],
   "host_permissions": [
     "https://*.crunchyroll.com/*",
@@ -19,7 +19,7 @@
     "128": "icons/icon128.png"
   },
   "action": {
-    "default_title": "Open SpoilerShield",
+    "default_title": "Open Veil",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png"
