@@ -14,7 +14,7 @@ Requirements for v1 Launch milestone.
 - [ ] **REB-03**: localStorage keys migrated from `spoilershield-*` to `veil-*` with backwards-compat read on first load (no data loss)
 - [x] **REB-04**: chrome.storage.local keys migrated from `spoilershield_*` to `veil_*` in content.js and sidepanel.js
 - [x] **REB-05**: postMessage types updated from `SPOILERSHIELD_*` to `VEIL_*` across content.js, sidepanel.js, and React app
-- [ ] **REB-06**: Extension icon updated to Veil icon (veil-icon.svg already exists at `extension/icons/`)
+- [x] **REB-06**: Extension icon updated to Veil icon (veil-icon.svg already exists at `extension/icons/`)
 
 ### Subtitle Context
 
@@ -61,7 +61,7 @@ Requirements for v1 Launch milestone.
 | REB-03 | Phase 1 | Pending |
 | REB-04 | Phase 1 | Complete |
 | REB-05 | Phase 1 | Complete |
-| REB-06 | Phase 1 | Pending |
+| REB-06 | Phase 1 | Complete |
 | SUB-01 | Phase 2 | Pending |
 | SUB-02 | Phase 2 | Pending |
 | SUB-03 | Phase 2 | Pending |
