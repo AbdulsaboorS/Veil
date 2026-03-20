@@ -31,8 +31,8 @@ async function fetchContextForTab(tabId) {
 // Send detected show info to the React app via window.postMessage
 async function sendShowInfoToApp() {
   try {
-    const result = await chrome.storage.local.get("spoilershield_show_info");
-    const showInfo = result.spoilershield_show_info;
+    const result = await chrome.storage.local.get("veil_show_info");
+    const showInfo = result.veil_show_info;
 
     // Dedup: only send (and log) when data actually changed.
     const showKey = showInfo
@@ -43,7 +43,7 @@ async function sendShowInfoToApp() {
     if (showKey === _lastSentShowKey) return;
     _lastSentShowKey = showKey;
 
-    console.log('[SpoilerShield] Show info changed → posting to app:', {
+    console.log('[Veil] Show info changed → posting to app:', {
       showTitle: showInfo?.showTitle,
       platform: showInfo?.platform,
       hasEpisodeInfo: !!showInfo?.episodeInfo,
@@ -51,21 +51,21 @@ async function sendShowInfoToApp() {
 
     window.postMessage(
       {
-        type: "SPOILERSHIELD_SHOW_INFO",
+        type: "VEIL_SHOW_INFO",
         payload: showInfo || { showTitle: '', platform: 'other' },
       },
       '*'
     );
   } catch (err) {
-    console.error('[SpoilerShield] Error sending show info:', err);
+    console.error('[Veil] Error sending show info:', err);
   }
 }
 
 // Send context (subtitle buffer etc.) to the React app
 async function sendContextToApp() {
   try {
-    let result = await chrome.storage.local.get("spoilershield_context");
-    let context = result.spoilershield_context;
+    let result = await chrome.storage.local.get("veil_context");
+    let context = result.veil_context;
 
     if (!context || (!context.contextText && (!Array.isArray(context.lines) || context.lines.length === 0))) {
       const tabId = await getActiveTabId();
@@ -83,7 +83,7 @@ async function sendContextToApp() {
             contextText,
           };
           try {
-            await chrome.storage.local.set({ spoilershield_context: context });
+            await chrome.storage.local.set({ veil_context: context });
           } catch { /* ignore */ }
         }
       }
@@ -91,24 +91,24 @@ async function sendContextToApp() {
 
     window.postMessage(
       {
-        type: "SPOILERSHIELD_CONTEXT",
+        type: "VEIL_CONTEXT",
         payload: context || null,
       },
       '*'
     );
   } catch (err) {
-    console.error('[SpoilerShield] Error sending context:', err);
-    window.postMessage({ type: "SPOILERSHIELD_CONTEXT", payload: null }, '*');
+    console.error('[Veil] Error sending context:', err);
+    window.postMessage({ type: "VEIL_CONTEXT", payload: null }, '*');
   }
 }
 
 // Listen for storage changes and immediately forward to the React app
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName !== 'local') return;
-  if (changes.spoilershield_show_info) {
+  if (changes.veil_show_info) {
     sendShowInfoToApp();
   }
-  if (changes.spoilershield_context) {
+  if (changes.veil_context) {
     sendContextToApp();
   }
 });
@@ -120,26 +120,26 @@ window.addEventListener("message", async (event) => {
   const type = event.data?.type;
   if (!type) return;
 
-  if (type === "SPOILERSHIELD_REQUEST_SHOW_INFO") {
+  if (type === "VEIL_REQUEST_SHOW_INFO") {
     await sendShowInfoToApp();
   }
 
-  if (type === "SPOILERSHIELD_REQUEST_CONTEXT") {
+  if (type === "VEIL_REQUEST_CONTEXT") {
     await sendContextToApp();
   }
 
-  if (type === "SPOILERSHIELD_REQUEST_REDETECT") {
-    console.log('[SpoilerShield] Re-detect requested');
+  if (type === "VEIL_REQUEST_REDETECT") {
+    console.log('[Veil] Re-detect requested');
     try {
       const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
       const tabId = tabs[0]?.id;
       if (tabId) {
         chrome.tabs.sendMessage(tabId, { type: "REDETECT_SHOW_INFO" }).catch((err) => {
-          console.log('[SpoilerShield] Content script not ready:', err);
+          console.log('[Veil] Content script not ready:', err);
         });
       }
     } catch (err) {
-      console.error('[SpoilerShield] Error requesting re-detect:', err);
+      console.error('[Veil] Error requesting re-detect:', err);
     }
     // Also send current show info immediately
     await sendShowInfoToApp();
