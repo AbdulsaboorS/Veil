@@ -44,7 +44,7 @@ export interface SessionMeta {
 }
 
 export type InitPhase =
-  | 'detecting'     // waiting for SPOILERSHIELD_SHOW_INFO
+  | 'detecting'     // waiting for VEIL_SHOW_INFO
   | 'resolving'     // TVMaze lookup in progress
   | 'ready'         // session loaded, chat active
   | 'needs-episode' // show found, no episode — inline picker shown

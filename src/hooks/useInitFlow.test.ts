@@ -88,7 +88,7 @@ function makeSessionStoreMock(overrides: Partial<{
     updateContext: vi.fn(),
     updateEpisode: vi.fn(),
     syncMessageCount: vi.fn(),
-    getMessagesKey: vi.fn((id: string) => `spoilershield-msgs-${id}`),
+    getMessagesKey: vi.fn((id: string) => `veil-msgs-${id}`),
     ...overrides,
   };
 }
@@ -98,7 +98,7 @@ function makeSessionStoreMock(overrides: Partial<{
 function sendShowInfo(payload: Record<string, unknown>) {
   window.dispatchEvent(
     new MessageEvent('message', {
-      data: { type: 'SPOILERSHIELD_SHOW_INFO', payload },
+      data: { type: 'VEIL_SHOW_INFO', payload },
       origin: window.location.origin,
     })
   );
@@ -295,7 +295,7 @@ describe('useInitFlow — updateContext called with sessionId on Netflix no-epis
     });
 
     window.localStorage.setItem(
-      'spoilershield-sessions',
+      'veil-sessions',
       JSON.stringify([{
         sessionId: 'netflix-session-id',
         showTitle: 'My Hero Academia',
@@ -342,7 +342,7 @@ describe('useInitFlow — updateContext called with sessionId on Netflix no-epis
     });
 
     window.localStorage.setItem(
-      'spoilershield-sessions',
+      'veil-sessions',
       JSON.stringify([{
         sessionId: 'netflix-no-summary-id',
         showTitle: 'Obscure Anime',
@@ -386,7 +386,7 @@ describe('useInitFlow — updateContext called with sessionId on Netflix no-epis
 
     // Session already has context — should not overwrite.
     window.localStorage.setItem(
-      'spoilershield-sessions',
+      'veil-sessions',
       JSON.stringify([{
         sessionId: 'netflix-existing-ctx',
         showTitle: 'Dragon Ball Z',
@@ -541,7 +541,7 @@ describe('useInitFlow — confirmManualSetup', () => {
     });
 
     window.localStorage.setItem(
-      'spoilershield-sessions',
+      'veil-sessions',
       JSON.stringify([{
         sessionId: 'manual-session',
         showTitle: 'Naruto',

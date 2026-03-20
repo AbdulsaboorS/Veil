@@ -283,7 +283,7 @@ function SidePanelApp() {
 // ─────────────────────────────────────────────────────────
 
 function WebApp() {
-  const [watchSetup, setWatchSetup] = useLocalStorage<WatchSetup>('spoilershield-setup', defaultSetup);
+  const [watchSetup, setWatchSetup] = useLocalStorage<WatchSetup>('veil-setup', defaultSetup);
   const { messages, isLoading, error, sendMessage } = useChat();
 
   const handleSendMessage = (message: string) => {

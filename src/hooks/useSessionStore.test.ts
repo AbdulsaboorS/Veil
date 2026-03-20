@@ -20,9 +20,9 @@ import { useSessionStore, makeSessionId } from './useSessionStore';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
-const SESSIONS_KEY = 'spoilershield-sessions';
-const ACTIVE_SESSION_KEY = 'spoilershield-active-session';
-const MESSAGES_PREFIX = 'spoilershield-msgs-';
+const SESSIONS_KEY = 'veil-sessions';
+const ACTIVE_SESSION_KEY = 'veil-active-session';
+const MESSAGES_PREFIX = 'veil-msgs-';
 
 function writeSessions(sessions: object[]) {
   window.localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
@@ -260,7 +260,7 @@ describe('useSessionStore — legacy migration', () => {
     expect(migrated[0].content).toBe('Hello');
   });
 
-  it('does not perform migration when spoilershield-sessions already exists', () => {
+  it('does not perform migration when veil-sessions already exists', () => {
     const existing = [makeSession()];
     writeSessions(existing);
     window.localStorage.setItem('spoilershield-chat', JSON.stringify([

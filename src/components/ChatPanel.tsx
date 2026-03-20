@@ -31,7 +31,7 @@ export function ChatPanel({
   const isSidePanel = useSidePanel();
   const [input, setInput] = useState('');
   const [style, setStyle] = useState<ResponseStyle>('quick');
-  const [reports, setReports] = useLocalStorage<SpoilerReport[]>('spoilershield-reports', []);
+  const [reports, setReports] = useLocalStorage<SpoilerReport[]>('veil-reports', []);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -88,7 +88,7 @@ export function ChatPanel({
       // Don't show error to user - logging failure is non-critical
     }
 
-    toast.success("Got it. Spoiler shield will tighten.", {
+    toast.success("Got it. Veil will tighten.", {
       description: "Thanks for the feedback!",
       duration: 3000,
     });

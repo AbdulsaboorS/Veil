@@ -68,7 +68,7 @@ export function useEpisodeRecap() {
       setIsLoading(false);
       return result;
     } catch (err) {
-      console.error('[SpoilerShield] get-show-context failed:', err);
+      console.error('[Veil] get-show-context failed:', err);
       const result: RecapResult = { summary: null, source: null, error: 'Failed to fetch context' };
       setRecap(result);
       setIsLoading(false);

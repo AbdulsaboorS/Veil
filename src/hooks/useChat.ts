@@ -64,7 +64,7 @@ async function fakeStream(text: string, onChunk: (content: string) => void) {
   }
 }
 
-export function useChat(storageKey = 'spoilershield-chat') {
+export function useChat(storageKey = 'veil-chat') {
   const storageKeyRef = useRef(storageKey);
 
   const [messages, setMessagesState] = useState<ChatMessage[]>(() => {
@@ -101,8 +101,8 @@ export function useChat(storageKey = 'spoilershield-chat') {
         }
       }
     };
-    window.addEventListener('spoilershield-messages-updated', onUpdate as EventListener);
-    return () => window.removeEventListener('spoilershield-messages-updated', onUpdate as EventListener);
+    window.addEventListener('veil-messages-updated', onUpdate as EventListener);
+    return () => window.removeEventListener('veil-messages-updated', onUpdate as EventListener);
   }, [storageKey]);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -221,14 +221,14 @@ export function useChat(storageKey = 'spoilershield-chat') {
         try {
           const errBody = await chatResponse.json();
           if (errBody.error) errMsg = errBody.error;
-          console.error('[SpoilerShield] API error:', {
+          console.error('[Veil] API error:', {
             status: chatResponse.status,
             error: errBody.error,
             detail: errBody.detail,
             debug: errBody.debug,
           });
         } catch {
-          console.error('[SpoilerShield] API error (unparseable):', chatResponse.status);
+          console.error('[Veil] API error (unparseable):', chatResponse.status);
         }
         throw new Error(errMsg);
       }
@@ -265,26 +265,17 @@ export function useChat(storageKey = 'spoilershield-chat') {
         // ── SPOILER-RISK PATH: collect silently → audit → fake stream ─
         const collected = await collectStream(chatResponse);
 
-        // Audit the collected answer
-        let finalContent = collected;
-        try {
-          const auditRes = await fetch(AUDIT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': AUTH_HEADER },
-            body: JSON.stringify({
-              answer: collected,
-              context: watchSetup.context ?? '',
-              season: parseInt(watchSetup.season) || 0,
-              episode: parseInt(watchSetup.episode) || 0,
-            }),
-          });
-          if (auditRes.ok) {
-            const auditData = await auditRes.json();
-            if (auditData.audited) finalContent = auditData.audited;
-          }
-        } catch {
-          // audit failure is non-fatal — use collected answer
-        }
+        // Audit pass disabled — system prompt + classify-question are sufficient.
+        // Re-enable by uncommenting the block below and restoring the toast import.
+        // try {
+        //   const auditRes = await fetch(AUDIT_URL, { ... });
+        //   if (auditRes.ok) {
+        //     const auditData = await auditRes.json();
+        //     if (auditData.audited) finalContent = auditData.audited;
+        //     if (auditData.wasModified) toast('Safety edit applied', { duration: 4000 });
+        //   }
+        // } catch { /* non-fatal */ }
+        const finalContent = collected;
 
         // Fake-stream the final (audited) answer
         if (finalContent.trim()) {

@@ -76,7 +76,7 @@ export function Header({
           <div className="flex items-center gap-2 shrink-0">
             <ShieldLogo size={22} />
             <span className="font-brand text-sm font-semibold tracking-tight text-foreground select-none">
-              spoilershield
+              veil
             </span>
           </div>
 
@@ -113,7 +113,7 @@ export function Header({
         <ShieldLogo size={32} />
         <div>
           <h1 className="font-brand text-xl font-semibold text-foreground tracking-tight">
-            spoilershield
+            veil
           </h1>
           <p className="text-xs text-muted-foreground">
             Ask questions without spoilers
