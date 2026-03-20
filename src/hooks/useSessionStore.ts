@@ -1,11 +1,70 @@
 import { useState, useCallback, useMemo, useRef } from 'react';
 import { SessionMeta, ChatMessage } from '@/lib/types';
 
-const SESSIONS_KEY = 'spoilershield-sessions';
-const ACTIVE_SESSION_KEY = 'spoilershield-active-session';
-const MESSAGES_PREFIX = 'spoilershield-msgs-';
-const LEGACY_CHAT_KEY = 'spoilershield-chat';
+const SESSIONS_KEY = 'veil-sessions';
+const ACTIVE_SESSION_KEY = 'veil-active-session';
+const MESSAGES_PREFIX = 'veil-msgs-';
+const LEGACY_CHAT_KEY = 'spoilershield-chat';  // intentionally unchanged: old legacy key
 const MAX_SESSIONS = 10;
+
+/**
+ * One-time migration: rename spoilershield-* localStorage keys to veil-*.
+ * Write-first strategy: new key is written before old key is deleted,
+ * so worst case is duplicate data — never data loss.
+ */
+function migrateStorageKeys(): void {
+  try {
+    // Migrate sessions list
+    const oldSessions = window.localStorage.getItem('spoilershield-sessions');
+    if (oldSessions && !window.localStorage.getItem('veil-sessions')) {
+      window.localStorage.setItem('veil-sessions', oldSessions);
+      window.localStorage.removeItem('spoilershield-sessions');
+    }
+
+    // Migrate active session pointer
+    const oldActive = window.localStorage.getItem('spoilershield-active-session');
+    if (oldActive && !window.localStorage.getItem('veil-active-session')) {
+      window.localStorage.setItem('veil-active-session', oldActive);
+      window.localStorage.removeItem('spoilershield-active-session');
+    }
+
+    // Migrate all spoilershield-msgs-{id} → veil-msgs-{id}
+    const keysToMigrate: string[] = [];
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const key = window.localStorage.key(i);
+      if (key?.startsWith('spoilershield-msgs-')) {
+        keysToMigrate.push(key);
+      }
+    }
+    for (const oldKey of keysToMigrate) {
+      const newKey = oldKey.replace('spoilershield-msgs-', 'veil-msgs-');
+      if (!window.localStorage.getItem(newKey)) {
+        const value = window.localStorage.getItem(oldKey);
+        if (value) window.localStorage.setItem(newKey, value);
+      }
+      window.localStorage.removeItem(oldKey);
+    }
+
+    // Migrate spoilershield-reports → veil-reports
+    const oldReports = window.localStorage.getItem('spoilershield-reports');
+    if (oldReports && !window.localStorage.getItem('veil-reports')) {
+      window.localStorage.setItem('veil-reports', oldReports);
+      window.localStorage.removeItem('spoilershield-reports');
+    }
+
+    // Migrate spoilershield-setup → veil-setup
+    const oldSetup = window.localStorage.getItem('spoilershield-setup');
+    if (oldSetup && !window.localStorage.getItem('veil-setup')) {
+      window.localStorage.setItem('veil-setup', oldSetup);
+      window.localStorage.removeItem('spoilershield-setup');
+    }
+  } catch {
+    // Never crash on migration failure
+  }
+}
+
+// Run migration once at module load
+migrateStorageKeys();
 
 function slugify(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
