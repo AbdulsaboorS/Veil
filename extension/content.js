@@ -20,7 +20,7 @@ function detectPlatform(hostname) {
 
 function log(...args) {
   if (DEV_LOGGING) {
-    console.log("[SpoilerShield]", ...args);
+    console.log("[Veil]", ...args);
   }
 }
 
@@ -292,7 +292,7 @@ async function storeShowInfo() {
   const showInfo = detectShowInfo();
   try {
     await chrome.storage.local.set({
-      spoilershield_show_info: showInfo,
+      veil_show_info: showInfo,
     });
     if (DEV_LOGGING) {
       log("stored show info:", showInfo);
@@ -507,7 +507,7 @@ async function publishUpdate() {
   // Store directly to chrome.storage.local for global access
   try {
     await chrome.storage.local.set({
-      spoilershield_context: record,
+      veil_context: record,
     });
     
     if (DEV_LOGGING && state.buffer.length > 0) {
