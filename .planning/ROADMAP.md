@@ -30,8 +30,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Rename extension layer: manifest name/description, chrome.storage keys (content.js + sidepanel.js), postMessage types (sidepanel.js), console prefixes, index.html title
-- [ ] 01-02-PLAN.md — Rename React src/ layer: localStorage key constants + migration, postMessage types (useInitFlow), custom DOM event, UI strings (Header, ShieldBadge), system prompt identity, test files
+- [x] 01-01-PLAN.md — Rename extension layer: manifest name/description, chrome.storage keys (content.js + sidepanel.js), postMessage types (sidepanel.js), console prefixes, index.html title
+- [x] 01-02-PLAN.md — Rename React src/ layer: localStorage key constants + migration, postMessage types (useInitFlow), custom DOM event, UI strings (Header, ShieldBadge), system prompt identity, test files
 - [ ] 01-03-PLAN.md — Generate Veil PNG icons from veil-icon.svg, rebuild extension bundle, human verify icon and UI
 
 ### Phase 2: Subtitle Context
@@ -62,6 +62,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Rebrand | 1/3 | In Progress|  |
+| 1. Rebrand | 2/3 | In Progress|  |
 | 2. Subtitle Context | 0/? | Not started | - |
 | 3. Web Store Launch | 0/? | Not started | - |
