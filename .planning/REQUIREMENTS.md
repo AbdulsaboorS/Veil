@@ -18,9 +18,9 @@ Requirements for v1 Launch milestone.
 
 ### Subtitle Context
 
-- [ ] **SUB-01**: Subtitle lines captured by content.js (rolling buffer, ~5 lines) are forwarded to the session's context field when updated
-- [ ] **SUB-02**: Chat edge function (`spoiler-shield-chat`) accepts and uses a labeled subtitle section in context (e.g. `CURRENT SCENE:`) so the model knows where in the episode the user is
-- [ ] **SUB-03**: Subtitle context does not cause re-detection or session reset when updated
+- [x] **SUB-01**: Subtitle lines captured by content.js (rolling buffer, ~5 lines) are forwarded to the session's context field when updated
+- [x] **SUB-02**: Chat edge function (`spoiler-shield-chat`) accepts and uses a labeled subtitle section in context (e.g. `CURRENT SCENE:`) so the model knows where in the episode the user is
+- [x] **SUB-03**: Subtitle context does not cause re-detection or session reset when updated
 
 ### Feedback & Testing
 
@@ -74,9 +74,9 @@ Requirements for v1 Launch milestone.
 | REB-04 | Phase 1 | Complete |
 | REB-05 | Phase 1 | Complete |
 | REB-06 | Phase 1 | Complete |
-| SUB-01 | Phase 2 | Pending |
-| SUB-02 | Phase 2 | Pending |
-| SUB-03 | Phase 2 | Pending |
+| SUB-01 | Phase 2 | Complete |
+| SUB-02 | Phase 2 | Complete |
+| SUB-03 | Phase 2 | Complete |
 | STR-01 | Phase 3 | Pending |
 | STR-02 | Phase 3 | Pending |
 | STR-03 | Phase 3 | Pending |
