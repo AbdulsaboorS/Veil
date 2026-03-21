@@ -32,6 +32,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
   const pollIdRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const prevEpisodeRef = useRef<{ season: string; episode: string; sessionId: string } | null>(null);
   const noShowGraceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const contextDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Latest-ref pattern: updated synchronously each render so callbacks can read
   // current values without listing them as deps (avoids identity churn → no loop).
@@ -346,6 +347,63 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
       if (noShowGraceRef.current) clearTimeout(noShowGraceRef.current);
     };
   }, [isSidePanel]); // doTVMazeLookupAndCreateSession is stable ([] deps) — safe to omit
+
+  // Subtitle context listener: receives VEIL_CONTEXT messages from sidepanel.js
+  // and merges the latest subtitle lines into the active session's context field.
+  // Completely independent from the VEIL_SHOW_INFO handler — never touches phase state.
+  useEffect(() => {
+    if (!isSidePanel) return;
+
+    const onContextMessage = (event: MessageEvent) => {
+      const data = event.data as unknown;
+      if (!data || typeof data !== 'object') return;
+      const maybe = data as { type?: unknown; payload?: unknown };
+      if (maybe.type !== 'VEIL_CONTEXT') return;
+
+      const payload = maybe.payload as {
+        lines?: string[];
+        contextText?: string;
+        updatedAt?: string;
+      } | null;
+
+      if (!payload || (!payload.lines?.length && !payload.contextText?.trim())) return;
+
+      // Take the last 5 lines only — positional hint, not full transcript
+      const recentLines = (payload.lines ?? []).slice(-5);
+      if (!recentLines.length) return;
+
+      const subtitleBlock = `CURRENT SCENE:\n${recentLines.join('\n')}`;
+
+      // Debounce at 3 seconds — subtitles fire on every DOM mutation (~1-2s intervals)
+      if (contextDebounceRef.current) clearTimeout(contextDebounceRef.current);
+      contextDebounceRef.current = setTimeout(() => {
+        contextDebounceRef.current = null;
+
+        // Read sessionId at execution time (not scheduling time) to avoid stale closure
+        const currentSessionId = sessionStoreRef.current.activeSession?.meta.sessionId;
+        if (!currentSessionId) return;
+
+        const existingContext = sessionStoreRef.current.activeSession?.meta.context ?? '';
+        // Replace the previous CURRENT SCENE block (if any); preserve the recap summary
+        const baseContext = existingContext.replace(/\nCURRENT SCENE:[\s\S]*$/, '').trimEnd();
+        const mergedContext = baseContext
+          ? `${baseContext}\n\n${subtitleBlock}`
+          : subtitleBlock;
+
+        sessionStoreRef.current.updateContext(mergedContext, currentSessionId);
+      }, 3000);
+    };
+
+    window.addEventListener('message', onContextMessage);
+
+    return () => {
+      window.removeEventListener('message', onContextMessage);
+      if (contextDebounceRef.current) {
+        clearTimeout(contextDebounceRef.current);
+        contextDebounceRef.current = null;
+      }
+    };
+  }, [isSidePanel]);
 
   /** Called when user manually sets up show+episode (from no-show or needs-episode) */
   const confirmManualSetup = useCallback(async (
