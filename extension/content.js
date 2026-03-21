@@ -1,5 +1,9 @@
 // Content script: maintains a rolling buffer of subtitle lines and can return it on request.
 
+// Guard against double-injection (manifest content_scripts + background.js executeScript race).
+if (window.__veil_loaded) { throw new Error('Veil content.js already loaded — skipping'); }
+window.__veil_loaded = true;
+
 const BUFFER_MAX_LINES = 40; // ~120 seconds worth, depending on cadence
 const DEV_LOGGING = false;
 
