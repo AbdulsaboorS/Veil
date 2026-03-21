@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-subtitle-context 02-01-PLAN.md
-last_updated: "2026-03-21T06:40:04.246Z"
+stopped_at: Completed 02-subtitle-context 02-02-PLAN.md
+last_updated: "2026-03-21T06:42:14.651Z"
 last_activity: 2026-03-20 — Completed plan 01-02 (React src/ rebrand)
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 5
-  completed_plans: 4
+  completed_plans: 5
   percent: 15
 ---
 
@@ -54,6 +54,7 @@ Progress: [█░░░░░░░░░] 15%
 | Phase 01-rebrand P02 | ~8min | 3 tasks | 13 files |
 | Phase 01-rebrand P03 | 5 | 3 tasks | 4 files |
 | Phase 02-subtitle-context P01 | 1 | 1 tasks | 2 files |
+| Phase 02-subtitle-context P02 | 1 | 1 tasks | 0 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,8 @@ Recent decisions affecting current work:
 - [Phase 02-subtitle-context]: Only last 5 subtitle lines stored as positional hint — full transcript would be scope creep and token waste
 - [Phase 02-subtitle-context]: VEIL_CONTEXT listener is a standalone useEffect, never touches setPhase or detection state
 - [Phase 02-subtitle-context]: 3-second debounce on subtitle DOM mutations before writing to localStorage
+- [Phase 02-subtitle-context]: Auto-approved human-verify checkpoint per AUTO_CFG=true — subtitle pipeline verified by code review, runtime confirmation via smoke test
+- [Phase 02-subtitle-context]: Crunchyroll subtitle selector reliability remains open question — Netflix is primary confirmation target for SUB-01/02/03
 
 ### Pending Todos
 
@@ -85,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T06:40:04.244Z
-Stopped at: Completed 02-subtitle-context 02-01-PLAN.md
+Last session: 2026-03-21T06:42:14.649Z
+Stopped at: Completed 02-subtitle-context 02-02-PLAN.md
 Resume file: None
