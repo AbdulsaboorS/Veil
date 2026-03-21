@@ -176,14 +176,22 @@ After making changes, run this quick manual check to catch regressions:
 | Crunchyroll SPA title "Most Popular Anime S..." overriding session | **Fixed 2026-03-15** — `content.js` filters out known Crunchyroll browse/marketing titles before storing. |
 | Spoiler refusal classification labels showing in chat | **Fixed 2026-03-15** — System prompt updated to classify silently. |
 | Spoiler blocked badge animation | **Done 2026-03-15** — `🛡️ Spoiler Blocked` badge with spring-pop animation appears after spoiler-risk responses. |
+| Audit pass not wired / no "Safety edit applied" toast | **Fixed 2026-03-19** — `classify-question` + `audit-answer` deployed; `wasModified` check added to `useChat.ts`; toast shown when audit modifies the answer. |
+| Subtitle context not reaching chat model | **In progress 2026-03-21** — OpenSubtitles pipeline built and deployed. 390 cues load for JJK S1E6. Blocked: Crunchyroll video is in cross-origin iframe, `findMainVideo()` returns null in main frame. Fix described in Section 8 #1. |
 
 ---
 
 ## 8. Upcoming Work (Prioritized)
 
-1. **Chrome Web Store submission** – Highest priority for launch. Prep store listing, description, screenshots, privacy policy.
-2. **Crunchyroll subtitle context** – content.js already captures subtitle lines into `spoilershield_context`. Wire into chat context pipeline so model knows where in episode user currently is.
-3. **Re-enable audit pass** – Wire `audit-answer` in `useChat.ts` after streaming; show "Safety edit applied" when answer is modified.
+1. **🔴 NEXT TASK: Fix Crunchyroll subtitle currentTime relay** — The subtitle cue pipeline is fully built. Only missing piece: `video.currentTime` is inaccessible from the main frame because Crunchyroll's player is in a cross-origin iframe at `static.crunchyroll.com/vilos-v2/...`. Fix:
+   - Add `"https://static.crunchyroll.com/*"` to `host_permissions` in `manifest.json`
+   - Create `extension/crunchyroll-time-relay.js` — a tiny content script (~15 lines) injected into the iframe that polls `document.querySelector('video')?.currentTime` every 500ms and sends it via `window.parent.postMessage({ type: '__VEIL_VIDEO_TIME__', currentTime }, '*')`
+   - In `extension/content.js` (main frame), listen for `__VEIL_VIDEO_TIME__` messages and use that `currentTime` in the `startOsLoop` sync loop instead of calling `findMainVideo()`
+   - Add second `content_scripts` entry in `manifest.json` targeting `https://static.crunchyroll.com/vilos-v2/*` with `all_frames: true`, `run_at: document_idle`
+   - Rebuild bundle: `BUILD_TARGET=extension npm run build`
+   - Test: `chrome.storage.local.get('veil_context', console.log)` in side panel DevTools should show current subtitle lines while JJK S1E6 plays
+2. **Chrome Web Store submission** – After subtitle feature confirmed working.
+3. ~~**Re-enable audit pass**~~ – **Done 2026-03-19** — audit pass active; "Safety edit applied" toast wired.
 4. **Fix Netflix SPA navigation** – Fix in progress (webNavigation listener added). Confirm working, then close out.
 5. **Fix Netflix movie scraping** – Fix in progress (head observer + retry polling). Confirm working, then close out.
 6. **Add `season`/`episode` to `id_mappings`** – DB migration for episode-level Netflix content ID mappings.
