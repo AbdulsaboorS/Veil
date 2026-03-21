@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-subtitle-context 02-02-PLAN.md
-last_updated: "2026-03-21T06:42:14.651Z"
+stopped_at: Completed 02-subtitle-context 02-03-PLAN.md
+last_updated: "2026-03-21T07:45:19.704Z"
 last_activity: 2026-03-20 — Completed plan 01-02 (React src/ rebrand)
 progress:
   total_phases: 5
-  completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
+  completed_phases: 1
+  total_plans: 7
+  completed_plans: 6
   percent: 15
 ---
 
@@ -55,6 +55,7 @@ Progress: [█░░░░░░░░░] 15%
 | Phase 01-rebrand P03 | 5 | 3 tasks | 4 files |
 | Phase 02-subtitle-context P01 | 1 | 1 tasks | 2 files |
 | Phase 02-subtitle-context P02 | 1 | 1 tasks | 0 files |
+| Phase 02-subtitle-context P03 | 2 | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,8 @@ Recent decisions affecting current work:
 - [Phase 02-subtitle-context]: 3-second debounce on subtitle DOM mutations before writing to localStorage
 - [Phase 02-subtitle-context]: Auto-approved human-verify checkpoint per AUTO_CFG=true — subtitle pipeline verified by code review, runtime confirmation via smoke test
 - [Phase 02-subtitle-context]: Crunchyroll subtitle selector reliability remains open question — Netflix is primary confirmation target for SUB-01/02/03
+- [Phase 02-subtitle-context]: MAIN world fetch override chosen over DOM MutationObserver — Crunchyroll ASS file fetch is the only reliable subtitle signal
+- [Phase 02-subtitle-context]: response.clone() pattern used in fetch override — consuming original response would break Crunchyroll player
 
 ### Pending Todos
 
@@ -88,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T06:42:14.649Z
-Stopped at: Completed 02-subtitle-context 02-02-PLAN.md
+Last session: 2026-03-21T07:45:19.701Z
+Stopped at: Completed 02-subtitle-context 02-03-PLAN.md
 Resume file: None
