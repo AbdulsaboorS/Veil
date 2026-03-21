@@ -591,7 +591,7 @@ resetObservers();
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (!message || typeof message !== "object") return;
-  
+
   // Handle re-detect requests
   if (message.type === "REDETECT_SHOW_INFO") {
     // Re-run detection immediately
@@ -599,7 +599,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     sendResponse({ ok: true });
     return true; // Keep channel open for async response
   }
-  
+
   // Handle GET_CONTEXT requests
   if (message.type !== "GET_CONTEXT") return;
 
@@ -619,4 +619,85 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
   sendResponse({ ok: true, record });
 });
+
+// ── Subtitle Intercept Receiver (Crunchyroll MAIN world → isolated world) ─────────────
+// Receives parsed ASS cue lists from subtitle-interceptor.js via postMessage.
+// Starts a 1-second polling loop that finds active cues at video.currentTime
+// and writes them to chrome.storage.local['veil_context'].
+// Only active on Crunchyroll (subtitle-interceptor.js only fires there).
+
+(function () {
+  if (state.platform !== 'crunchyroll') return;
+
+  var _interceptedCues = [];
+  var _syncInterval = null;
+
+  function findActiveCues(cues, currentTime) {
+    // Linear scan — typical ASS file has ~300-600 cues; at 1s poll this is negligible.
+    var active = [];
+    for (var i = 0; i < cues.length; i++) {
+      var c = cues[i];
+      if (c.start <= currentTime && c.end > currentTime) {
+        active.push(c.text);
+      }
+    }
+    return active;
+  }
+
+  function findMainVideo() {
+    // Find the main content video (longest duration) to avoid ad video elements.
+    var videos = document.querySelectorAll('video');
+    var best = null;
+    var bestDuration = 0;
+    for (var i = 0; i < videos.length; i++) {
+      var v = videos[i];
+      if (v.duration > bestDuration) {
+        bestDuration = v.duration;
+        best = v;
+      }
+    }
+    return best;
+  }
+
+  function startSyncLoop(cues) {
+    _interceptedCues = cues;
+    if (_syncInterval) {
+      clearInterval(_syncInterval);
+    }
+    _syncInterval = setInterval(function () {
+      var video = findMainVideo();
+      if (!video || video.paused || video.ended || isNaN(video.currentTime)) return;
+
+      var activeLines = findActiveCues(_interceptedCues, video.currentTime);
+      if (activeLines.length === 0) return;
+
+      // Take last 5 lines (in case of simultaneous cues, use all; if only 1, use it).
+      var lines = activeLines.slice(0, 5);
+
+      chrome.storage.local.set({
+        veil_context: {
+          platform: 'crunchyroll',
+          url: location.href,
+          title: document.title || '',
+          updatedAt: new Date().toISOString(),
+          lines: lines,
+          contextText: lines.join(' '),
+        },
+      }).catch(function () {});
+    }, 1000);
+  }
+
+  // Listen for messages from subtitle-interceptor.js (MAIN world).
+  window.addEventListener('message', function (event) {
+    // Only accept messages from the same window (page).
+    if (event.source !== window) return;
+    var data = event.data;
+    if (!data || data.type !== '__VEIL_SUBTITLE_INTERCEPTED__') return;
+    var cues = data.cues;
+    if (!Array.isArray(cues) || cues.length === 0) return;
+
+    log('[intercept] received', cues.length, 'cues from MAIN world for', data.url);
+    startSyncLoop(cues);
+  });
+})();
 

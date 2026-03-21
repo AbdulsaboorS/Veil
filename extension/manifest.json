@@ -31,6 +31,16 @@
   "content_scripts": [
     {
       "matches": [
+        "https://www.crunchyroll.com/watch/*",
+        "https://crunchyroll.com/watch/*"
+      ],
+      "js": ["subtitle-interceptor.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": [
         "https://*.crunchyroll.com/*",
         "https://crunchyroll.com/*",
         "https://www.crunchyroll.com/*",
