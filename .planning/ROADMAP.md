@@ -13,7 +13,7 @@ Veil is feature-complete. This milestone is launch prep: rename every SpoilerShi
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Rebrand** - All user-visible surfaces and storage say "Veil" — zero SpoilerShield remnants (completed 2026-03-20)
-- [ ] **Phase 2: Subtitle Context** - Rolling subtitle lines flow into chat so the model knows where in the episode the user is
+- [x] **Phase 2: Subtitle Context** - Rolling subtitle lines flow into chat so the model knows where in the episode the user is (completed 2026-03-21)
 - [ ] **Phase 3: Feedback & Testing** - In-extension feedback submission, Supabase-backed storage, read-only admin dashboard
 - [ ] **Phase 4: Landing Page** - Landing page copy, visual polish, and waitlist/signup flow
 - [ ] **Phase 5: Web Store Launch** - Extension submitted to Chrome Web Store under the Veil brand
@@ -91,7 +91,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Rebrand | 3/3 | Complete   | 2026-03-20 |
-| 2. Subtitle Context | 2/4 | In Progress|  |
+| 2. Subtitle Context | 4/4 | Complete   | 2026-03-21 |
 | 3. Feedback & Testing | 0/? | Not started | - |
 | 4. Landing Page | 0/? | Not started | - |
 | 5. Web Store Launch | 0/? | Not started | - |
