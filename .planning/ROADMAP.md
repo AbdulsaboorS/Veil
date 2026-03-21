@@ -44,7 +44,11 @@ Plans:
   1. After subtitles appear on screen, the active session's context field updates to include the current scene lines (within ~5 subtitle lines)
   2. The chat model response for a scene-specific question references the current scene content (not just the episode summary)
   3. Updating subtitle context does not trigger re-detection, session reset, or any visible UX disruption
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Add VEIL_CONTEXT listener with debounce and context merge to useInitFlow.ts; rebuild extension bundle
+- [ ] 02-02-PLAN.md — Human verify end-to-end subtitle pipeline: SUB-01 context field, SUB-02 model response, SUB-03 no re-detection
 
 ### Phase 3: Feedback & Testing
 **Goal**: Users can submit feedback from within the extension; submissions land in Supabase; a read-only password-protected dashboard lets the owner review them
@@ -85,7 +89,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Rebrand | 3/3 | Complete   | 2026-03-20 |
-| 2. Subtitle Context | 0/? | Not started | - |
+| 2. Subtitle Context | 0/2 | Not started | - |
 | 3. Feedback & Testing | 0/? | Not started | - |
 | 4. Landing Page | 0/? | Not started | - |
 | 5. Web Store Launch | 0/? | Not started | - |
