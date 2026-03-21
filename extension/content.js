@@ -366,7 +366,11 @@ async function storeShowInfo() {
 })();
 
 function pickSubtitleElements() {
-  const isCrunchyroll = state.platform === "crunchyroll";
+  // Crunchyroll subtitle capture is handled by subtitle-interceptor.js (MAIN world fetch
+  // override). The DOM selectors below do not match Crunchyroll's current player DOM.
+  // Return empty array to prevent wasted MutationObserver rescans.
+  if (state.platform === "crunchyroll") return [];
+  const isCrunchyroll = false; // kept for dead-code safety; only non-CR platforms reach here
   
   const selectors = isCrunchyroll
     ? [
