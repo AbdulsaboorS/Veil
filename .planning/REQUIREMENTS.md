@@ -22,6 +22,18 @@ Requirements for v1 Launch milestone.
 - [ ] **SUB-02**: Chat edge function (`spoiler-shield-chat`) accepts and uses a labeled subtitle section in context (e.g. `CURRENT SCENE:`) so the model knows where in the episode the user is
 - [ ] **SUB-03**: Subtitle context does not cause re-detection or session reset when updated
 
+### Feedback & Testing
+
+- [ ] **FBK-01**: A feedback entry point (button or menu item) is accessible from within the extension side panel at all times
+- [ ] **FBK-02**: Submitted feedback is stored in a Supabase table with timestamp, text, show name, and platform metadata
+- [ ] **FBK-03**: A read-only dashboard (hosted in `/landing`) displays all submissions, protected by a simple password
+
+### Landing Page
+
+- [ ] **LND-01**: Landing page copy reflects Veil brand — no SpoilerShield references, clear value proposition
+- [ ] **LND-02**: Visual design is polished and responsive on mobile and desktop
+- [ ] **LND-03**: A waitlist or signup CTA is functional and captures email addresses
+
 ### Web Store
 
 - [ ] **STR-01**: Chrome Web Store listing created with Veil name, description (short + detailed), and category

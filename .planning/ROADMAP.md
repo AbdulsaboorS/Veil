@@ -2,19 +2,21 @@
 
 ## Overview
 
-Veil is feature-complete. This milestone is launch prep: rename every SpoilerShield artifact to Veil, wire subtitle context into the chat pipeline so the model knows where in the episode the user is, then ship to the Chrome Web Store. Three phases, each delivering one coherent capability that unblocks the next.
+Veil is feature-complete. This milestone is launch prep: rename every SpoilerShield artifact to Veil, wire subtitle context into the chat pipeline so the model knows where in the episode the user is, add user feedback tooling, polish the landing page, then ship to the Chrome Web Store. Five phases, each delivering one coherent capability that unblocks the next.
 
 ## Phases
 
 **Phase Numbering:**
-- Integer phases (1, 2, 3): Planned milestone work
+- Integer phases (1, 2, 3, 4, 5): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Rebrand** - All user-visible surfaces and storage say "Veil" — zero SpoilerShield remnants (completed 2026-03-20)
 - [ ] **Phase 2: Subtitle Context** - Rolling subtitle lines flow into chat so the model knows where in the episode the user is
-- [ ] **Phase 3: Web Store Launch** - Extension submitted to Chrome Web Store under the Veil brand
+- [ ] **Phase 3: Feedback & Testing** - In-extension feedback submission, Supabase-backed storage, read-only admin dashboard
+- [ ] **Phase 4: Landing Page** - Landing page copy, visual polish, and waitlist/signup flow
+- [ ] **Phase 5: Web Store Launch** - Extension submitted to Chrome Web Store under the Veil brand
 
 ## Phase Details
 
@@ -44,9 +46,29 @@ Plans:
   3. Updating subtitle context does not trigger re-detection, session reset, or any visible UX disruption
 **Plans**: TBD
 
-### Phase 3: Web Store Launch
-**Goal**: Veil is publicly available on the Chrome Web Store with a complete, policy-compliant store listing
+### Phase 3: Feedback & Testing
+**Goal**: Users can submit feedback from within the extension; submissions land in Supabase; a read-only password-protected dashboard lets the owner review them
 **Depends on**: Phase 2
+**Requirements**: FBK-01, FBK-02, FBK-03
+**Success Criteria** (what must be TRUE):
+  1. A feedback entry point (button or menu item) is accessible from within the extension side panel
+  2. Submitted feedback is stored in a Supabase table with timestamp, text, and optional metadata (show, platform)
+  3. A read-only dashboard (hosted alongside the landing page) displays all submissions, protected by a simple password
+**Plans**: TBD
+
+### Phase 4: Landing Page
+**Goal**: The Veil landing page is polished and ready for public traffic — updated copy, visual refinements, and a working waitlist/signup flow
+**Depends on**: Phase 3
+**Requirements**: LND-01, LND-02, LND-03
+**Success Criteria** (what must be TRUE):
+  1. Landing page copy reflects the Veil brand (no SpoilerShield references) and clearly communicates the product value
+  2. Visual design is polished — consistent with extension UI, responsive on mobile and desktop
+  3. A waitlist or signup CTA is functional and captures email addresses
+**Plans**: TBD
+
+### Phase 5: Web Store Launch
+**Goal**: Veil is publicly available on the Chrome Web Store with a complete, policy-compliant store listing
+**Depends on**: Phase 4
 **Requirements**: STR-01, STR-02, STR-03, STR-04, STR-05
 **Success Criteria** (what must be TRUE):
   1. Chrome Web Store listing shows "Veil" with a short description, detailed description, and correct category — visible to any Chrome user searching for it
@@ -58,10 +80,12 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Rebrand | 3/3 | Complete   | 2026-03-20 |
 | 2. Subtitle Context | 0/? | Not started | - |
-| 3. Web Store Launch | 0/? | Not started | - |
+| 3. Feedback & Testing | 0/? | Not started | - |
+| 4. Landing Page | 0/? | Not started | - |
+| 5. Web Store Launch | 0/? | Not started | - |
