@@ -705,3 +705,73 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   });
 })();
 
+// ── OpenSubtitles Cue Receiver (all platforms) ────────────────────────────────────────────
+// Receives pre-fetched subtitle cues ({startMs, endMs, text}[]) written to
+// chrome.storage.local['veil_subtitle_cues'] by sidepanel.js (relayed from React).
+// Runs a 1-second poll loop against video.currentTime and writes active lines
+// to veil_context — the same key sidepanel.js already monitors and forwards to useInitFlow.
+(function () {
+  var _osCues = [];
+  var _osInterval = null;
+
+  function findActiveCuesMs(cues, currentTimeS) {
+    var active = [];
+    var nowMs = currentTimeS * 1000;
+    for (var i = 0; i < cues.length; i++) {
+      var c = cues[i];
+      if (c.startMs <= nowMs && c.endMs > nowMs) {
+        active.push(c.text);
+      }
+    }
+    return active;
+  }
+
+  function findMainVideo() {
+    var videos = document.querySelectorAll('video');
+    var best = null;
+    var bestDuration = 0;
+    for (var i = 0; i < videos.length; i++) {
+      var v = videos[i];
+      if (v.duration > bestDuration) { bestDuration = v.duration; best = v; }
+    }
+    return best;
+  }
+
+  function startOsLoop(cues) {
+    _osCues = cues;
+    if (_osInterval) clearInterval(_osInterval);
+    _osInterval = setInterval(function () {
+      var video = findMainVideo();
+      if (!video || video.paused || video.ended || isNaN(video.currentTime)) return;
+      var lines = findActiveCuesMs(_osCues, video.currentTime).slice(0, 5);
+      if (!lines.length) return;
+      chrome.storage.local.set({
+        veil_context: {
+          platform: state.platform,
+          url: location.href,
+          title: document.title || '',
+          updatedAt: new Date().toISOString(),
+          lines: lines,
+          contextText: lines.join(' '),
+        },
+      }).catch(function () {});
+    }, 1000);
+  }
+
+  // React app sends cues → sidepanel.js stores in veil_subtitle_cues → we pick them up here.
+  chrome.storage.onChanged.addListener(function (changes, area) {
+    if (area !== 'local' || !changes.veil_subtitle_cues) return;
+    var newValue = changes.veil_subtitle_cues.newValue;
+    if (Array.isArray(newValue) && newValue.length > 0) {
+      startOsLoop(newValue);
+    }
+  });
+
+  // Also pick up cues already stored before this content script loaded.
+  chrome.storage.local.get('veil_subtitle_cues', function (result) {
+    if (Array.isArray(result.veil_subtitle_cues) && result.veil_subtitle_cues.length > 0) {
+      startOsLoop(result.veil_subtitle_cues);
+    }
+  });
+})();
+

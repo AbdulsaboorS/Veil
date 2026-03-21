@@ -33,6 +33,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
   const prevEpisodeRef = useRef<{ season: string; episode: string; sessionId: string } | null>(null);
   const noShowGraceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const contextDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const subtitleFetchedRef = useRef<string | null>(null);
 
   // Latest-ref pattern: updated synchronously each render so callbacks can read
   // current values without listing them as deps (avoids identity churn → no loop).
@@ -404,6 +405,43 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
       }
     };
   }, [isSidePanel]);
+
+  // When phase becomes ready with a known episode, fetch subtitle cues from the edge
+  // function and push them to content.js via sidepanel.js → chrome.storage.local.
+  // content.js then runs a 1s poll loop to write active lines into veil_context,
+  // which sidepanel.js forwards as VEIL_CONTEXT → handled by the listener above.
+  useEffect(() => {
+    if (!isSidePanel || phase !== 'ready') return;
+    const session = sessionStoreRef.current.activeSession?.meta;
+    if (!session?.showId || !session?.season || !session?.episode) return;
+
+    const cacheKey = `${session.showId}-${session.season}-${session.episode}`;
+    if (subtitleFetchedRef.current === cacheKey) return;
+    subtitleFetchedRef.current = cacheKey;
+
+    fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-episode-subtitles`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          tvmazeId: session.showId,
+          season: parseInt(session.season),
+          episode: parseInt(session.episode),
+        }),
+      }
+    )
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.cues?.length) {
+          window.postMessage({ type: 'VEIL_SUBTITLE_CUES', payload: data.cues }, '*');
+        }
+      })
+      .catch(() => { /* subtitle fetch is best-effort */ });
+  }, [phase, isSidePanel]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /** Called when user manually sets up show+episode (from no-show or needs-episode) */
   const confirmManualSetup = useCallback(async (

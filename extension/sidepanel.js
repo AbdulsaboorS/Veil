@@ -128,6 +128,13 @@ window.addEventListener("message", async (event) => {
     await sendContextToApp();
   }
 
+  if (type === "VEIL_SUBTITLE_CUES") {
+    const cues = event.data?.payload;
+    if (Array.isArray(cues) && cues.length > 0) {
+      chrome.storage.local.set({ veil_subtitle_cues: cues });
+    }
+  }
+
   if (type === "VEIL_REQUEST_REDETECT") {
     console.log('[Veil] Re-detect requested');
     try {
