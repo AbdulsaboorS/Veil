@@ -454,6 +454,12 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
     episode: string
   ) => {
     setPhase('resolving');
+    // Cancel no-show detection timer — manual setup supersedes automatic detection.
+    hasReceivedShowInfo.current = true;
+    if (detectionTimerRef.current) {
+      clearTimeout(detectionTimerRef.current);
+      detectionTimerRef.current = null;
+    }
 
     const sessionId = sessionStoreRef.current.loadOrCreateSession(showTitle, showId, platform, season, episode);
 

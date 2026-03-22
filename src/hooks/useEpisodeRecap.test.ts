@@ -20,15 +20,8 @@ import { describe, it, expect, beforeEach, vi, type MockedFunction } from 'vites
 import { renderHook, act } from '@testing-library/react';
 import { useEpisodeRecap } from './useEpisodeRecap';
 
-// ─── mock import.meta.env ─────────────────────────────────────────────────────
-vi.stubGlobal('import', {
-  meta: {
-    env: {
-      VITE_SUPABASE_URL: 'https://test.supabase.co',
-      VITE_SUPABASE_PUBLISHABLE_KEY: 'test-anon-key',
-    },
-  },
-});
+// Note: vi.stubGlobal('import', ...) cannot override import.meta.env in Vite because
+// the env values are substituted at transform time. URL assertions use toContain instead.
 
 // ─── fetch mock helpers ───────────────────────────────────────────────────────
 
@@ -50,7 +43,7 @@ function makeJsonResponse(body: unknown, ok = true, status = 200): Response {
 }
 
 const CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
-const KB_ENDPOINT = 'https://test.supabase.co/functions/v1/get-show-context';
+const KB_ENDPOINT_PATH = '/functions/v1/get-show-context';
 
 function kbResponse(context: string | null, source: string | null = 'tvmaze') {
   return {
@@ -105,7 +98,7 @@ describe('fetchRecap — cache hit', () => {
 
     expect(recap!.summary).toBe('Fresh summary');
     expect(mockFetch).toHaveBeenCalledTimes(1);
-    expect(mockFetch).toHaveBeenCalledWith(KB_ENDPOINT, expect.anything());
+    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining(KB_ENDPOINT_PATH), expect.anything());
 
     // New value stored in cache
     const stored = JSON.parse(localStorage.getItem(cacheKey)!);
@@ -130,7 +123,7 @@ describe('fetchRecap — cache miss', () => {
     expect(mockFetch).toHaveBeenCalledTimes(1);
 
     const [url, opts] = mockFetch.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe(KB_ENDPOINT);
+    expect(url).toContain(KB_ENDPOINT_PATH);
     const body = JSON.parse(opts.body as string);
     expect(body.showTitle).toBe('Jujutsu Kaisen');
     expect(body.season).toBe(1);

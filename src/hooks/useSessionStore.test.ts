@@ -108,6 +108,8 @@ describe('useSessionStore — loadOrCreateSession', () => {
   });
 
   it('evicts the oldest session when the 10-session limit is reached', () => {
+    // Sessions stored newest-first (index 0 = most recent, index 9 = oldest).
+    // The eviction removes the last element (index 9 = oldest).
     const sessions = Array.from({ length: 10 }, (_, i) => ({
       sessionId: `show-s1e${i + 1}`,
       showId: i,
@@ -116,13 +118,13 @@ describe('useSessionStore — loadOrCreateSession', () => {
       season: '1',
       episode: String(i + 1),
       context: '',
-      lastMessageAt: Date.now() - (10 - i) * 1000,
+      lastMessageAt: Date.now() - i * 1000, // index 0 = newest, index 9 = oldest
       messageCount: 0,
       confirmed: true,
     }));
     writeSessions(sessions);
     // Also write a messages key for the session that will be evicted (last in array → oldest).
-    window.localStorage.setItem(`${MESSAGES_PREFIX}show-s1e1`, JSON.stringify([]));
+    window.localStorage.setItem(`${MESSAGES_PREFIX}show-s1e10`, JSON.stringify([]));
 
     const { result } = renderHook(() => useSessionStore());
 
@@ -135,7 +137,7 @@ describe('useSessionStore — loadOrCreateSession', () => {
     // Newest session is at the front.
     expect(stored[0].sessionId).toBe('100-s2e1');
     // Evicted session's messages key should be gone.
-    expect(window.localStorage.getItem(`${MESSAGES_PREFIX}show-s1e1`)).toBeNull();
+    expect(window.localStorage.getItem(`${MESSAGES_PREFIX}show-s1e10`)).toBeNull();
   });
 });
 

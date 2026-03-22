@@ -59,14 +59,26 @@ function makeJsonResponse(body: unknown, ok = true): Response {
   } as unknown as Response;
 }
 
-// A TVMaze search result for a generic show.
+// A get-show-context response for a generic show (matches the shape useInitFlow reads).
 function tvmazeSearchResult(name = 'Attack on Titan', id = 42, summary = '<p>Great show.</p>') {
-  return [{ show: { id, name, summary } }];
+  return {
+    tvmazeId: id,
+    resolvedTitle: name,
+    context: summary ? summary.replace(/<[^>]*>/g, '') : null,
+    source: 'tvmaze',
+    confidence: 'inferred',
+  };
 }
 
-// A TVMaze result with no summary.
+// A get-show-context response with no summary/context.
 function tvmazeSearchResultNoSummary(name = 'Netflix Show', id = 77) {
-  return [{ show: { id, name, summary: null } }];
+  return {
+    tvmazeId: id,
+    resolvedTitle: name,
+    context: null,
+    source: null,
+    confidence: 'inferred',
+  };
 }
 
 // ─── sessionStore mock factory ────────────────────────────────────────────────
@@ -134,7 +146,7 @@ describe('useInitFlow — Netflix dedup key', () => {
         showTitle: 'My Hero Academia',
         url: 'https://www.netflix.com/watch/12345',
       });
-      await vi.runAllTimersAsync();
+      await Promise.resolve(); // flush microtasks (let mocked fetch resolve)
     });
 
     await waitFor(() => {
@@ -152,7 +164,7 @@ describe('useInitFlow — Netflix dedup key', () => {
         showTitle: 'My Hero Academia',
         url: 'https://www.netflix.com/watch/12345', // same path
       });
-      await vi.runAllTimersAsync();
+      await Promise.resolve(); // flush microtasks (let mocked fetch resolve)
     });
 
     // No new fetch calls — message was deduped.
@@ -174,7 +186,7 @@ describe('useInitFlow — Netflix dedup key', () => {
         showTitle: 'My Hero Academia',
         url: 'https://www.netflix.com/watch/12345',
       });
-      await vi.runAllTimersAsync();
+      await Promise.resolve(); // flush microtasks (let mocked fetch resolve)
     });
 
     await waitFor(() => expect(result.current.phase).toBe('ready'));
@@ -188,7 +200,7 @@ describe('useInitFlow — Netflix dedup key', () => {
         showTitle: 'My Hero Academia',
         url: 'https://www.netflix.com/watch/99999', // different path
       });
-      await vi.runAllTimersAsync();
+      await Promise.resolve(); // flush microtasks (let mocked fetch resolve)
     });
 
     // A new TVMaze call should have been made for the new path.
@@ -207,7 +219,7 @@ describe('useInitFlow — Netflix dedup key', () => {
         showTitle: 'Attack on Titan',
         episodeInfo: { season: '1', episode: '1' },
       });
-      await vi.runAllTimersAsync();
+      await Promise.resolve(); // flush microtasks (let mocked fetch resolve)
     });
 
     await waitFor(() => expect(result.current.phase).toBe('ready'));
@@ -221,7 +233,7 @@ describe('useInitFlow — Netflix dedup key', () => {
         showTitle: 'Attack on Titan',
         episodeInfo: { season: '1', episode: '1' },
       });
-      await vi.runAllTimersAsync();
+      await Promise.resolve(); // flush microtasks (let mocked fetch resolve)
     });
 
     expect(mockFetch).toHaveBeenCalledTimes(0);
@@ -241,7 +253,7 @@ describe('useInitFlow — Netflix dedup key', () => {
         showTitle: 'Attack on Titan',
         episodeInfo: { season: '1', episode: '1' },
       });
-      await vi.runAllTimersAsync();
+      await Promise.resolve(); // flush microtasks (let mocked fetch resolve)
     });
 
     const firstCount = mockFetch.mock.calls.length;
@@ -252,7 +264,7 @@ describe('useInitFlow — Netflix dedup key', () => {
         showTitle: 'Attack on Titan',
         episodeInfo: { season: '1', episode: '2' }, // new episode
       });
-      await vi.runAllTimersAsync();
+      await Promise.resolve(); // flush microtasks (let mocked fetch resolve)
     });
 
     expect(mockFetch.mock.calls.length).toBeGreaterThan(firstCount);
@@ -270,7 +282,7 @@ describe('useInitFlow — Netflix dedup key', () => {
         showTitle: 'Some Show',
         // url intentionally absent
       });
-      await vi.runAllTimersAsync();
+      await Promise.resolve(); // flush microtasks (let mocked fetch resolve)
     });
 
     // Should not throw; TVMaze lookup fires once.
@@ -280,7 +292,7 @@ describe('useInitFlow — Netflix dedup key', () => {
     mockFetch.mockClear();
     await act(async () => {
       sendShowInfo({ platform: 'netflix', showTitle: 'Some Show' });
-      await vi.runAllTimersAsync();
+      await Promise.resolve(); // flush microtasks (let mocked fetch resolve)
     });
     expect(mockFetch).toHaveBeenCalledTimes(0);
   });
@@ -321,7 +333,7 @@ describe('useInitFlow — updateContext called with sessionId on Netflix no-epis
         showTitle: 'My Hero Academia',
         url: 'https://www.netflix.com/watch/80218879',
       });
-      await vi.runAllTimersAsync();
+      await Promise.resolve(); // flush microtasks (let mocked fetch resolve)
     });
 
     await waitFor(() => {
@@ -367,7 +379,7 @@ describe('useInitFlow — updateContext called with sessionId on Netflix no-epis
         showTitle: 'Obscure Anime',
         url: 'https://www.netflix.com/watch/55555',
       });
-      await vi.runAllTimersAsync();
+      await Promise.resolve(); // flush microtasks (let mocked fetch resolve)
     });
 
     // Give time for the async TVMaze call to complete.
@@ -412,7 +424,7 @@ describe('useInitFlow — updateContext called with sessionId on Netflix no-epis
         showTitle: 'Dragon Ball Z',
         url: 'https://www.netflix.com/watch/70111470',
       });
-      await vi.runAllTimersAsync();
+      await Promise.resolve(); // flush microtasks (let mocked fetch resolve)
     });
 
     await waitFor(() => expect(mockFetch).toHaveBeenCalled());
@@ -449,7 +461,7 @@ describe('useInitFlow — phase transitions', () => {
         showTitle: 'Demon Slayer',
         episodeInfo: { season: '1', episode: '1' },
       });
-      await vi.runAllTimersAsync();
+      await Promise.resolve(); // flush microtasks (let mocked fetch resolve)
     });
 
     await waitFor(() => expect(result.current.phase).toBe('ready'));
@@ -468,7 +480,7 @@ describe('useInitFlow — phase transitions', () => {
         showTitle: 'Naruto',
         // no episodeInfo
       });
-      await vi.runAllTimersAsync();
+      await Promise.resolve(); // flush microtasks (let mocked fetch resolve)
     });
 
     await waitFor(() => expect(result.current.phase).toBe('needs-episode'));
@@ -487,7 +499,7 @@ describe('useInitFlow — phase transitions', () => {
         url: 'https://www.netflix.com/watch/81040344',
         // no episodeInfo
       });
-      await vi.runAllTimersAsync();
+      await Promise.resolve(); // flush microtasks (let mocked fetch resolve)
     });
 
     await waitFor(() => expect(result.current.phase).toBe('ready'));
@@ -505,14 +517,20 @@ describe('useInitFlow — phase transitions', () => {
         showTitle: 'One Piece',
         episodeInfo: { season: '1', episode: '1' },
       });
-      await vi.runAllTimersAsync();
+      await Promise.resolve(); // flush microtasks (let mocked fetch resolve)
     });
 
     await waitFor(() => expect(result.current.phase).toBe('ready'));
 
     // Navigate away — empty showTitle on crunchyroll.
+    // The code uses an 8s grace timer (NO_SHOW_GRACE_MS) before setting no-show.
     await act(async () => {
       sendShowInfo({ platform: 'crunchyroll', showTitle: '' });
+    });
+
+    // Advance past grace timer to trigger no-show transition.
+    await act(async () => {
+      vi.advanceTimersByTime(9000);
     });
 
     expect(result.current.phase).toBe('no-show');
@@ -529,7 +547,7 @@ describe('useInitFlow — confirmManualSetup', () => {
 
     await act(async () => {
       await result.current.confirmManualSetup('Naruto', 20, 'crunchyroll', '1', '5');
-      await vi.runAllTimersAsync();
+      await Promise.resolve(); // flush microtasks (let mocked fetch resolve)
     });
 
     expect(result.current.phase).toBe('ready');
@@ -561,7 +579,7 @@ describe('useInitFlow — confirmManualSetup', () => {
 
     await act(async () => {
       await result.current.confirmManualSetup('Naruto', 20, 'crunchyroll', '1', '5');
-      await vi.runAllTimersAsync();
+      await Promise.resolve(); // flush microtasks (let mocked fetch resolve)
     });
 
     await waitFor(() => {
