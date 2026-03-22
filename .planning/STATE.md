@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-feedback-and-testing 03-03-PLAN.md
-last_updated: "2026-03-22T06:52:19.884Z"
+stopped_at: Completed 03-feedback-and-testing 03-04-PLAN.md
+last_updated: "2026-03-22T07:07:33.596Z"
 last_activity: 2026-03-20 — Completed plan 01-02 (React src/ rebrand)
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 12
-  completed_plans: 11
+  completed_plans: 12
   percent: 15
 ---
 
@@ -60,6 +60,7 @@ Progress: [█░░░░░░░░░] 15%
 | Phase 03-feedback-and-testing P01 | 3 | 2 tasks | 5 files |
 | Phase 03-feedback-and-testing P02 | 2 | 2 tasks | 4 files |
 | Phase 03-feedback-and-testing P03 | 8 | 1 tasks | 2 files |
+| Phase 03-feedback-and-testing P04 | 13 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -92,6 +93,9 @@ Recent decisions affecting current work:
 - [Phase 03-feedback-and-testing]: feedback text capped at 2000 chars server-side to bound row size
 - [Phase 03-feedback-and-testing]: landing/.env.local is gitignored — Supabase URL/key and admin hash must be set manually in Vercel env vars
 - [Phase 03-feedback-and-testing]: Admin page password hash comparison is client-side only via Web Crypto — acceptable for internal-only read-only admin page
+- [Phase 03-feedback-and-testing]: confirmManualSetup cancels detection timer — manual setup must be authoritative over auto-detection
+- [Phase 03-feedback-and-testing]: jest=vi shim in test setup.ts required for @testing-library waitFor to work with vitest fake timers
+- [Phase 03-feedback-and-testing]: Human-verify checkpoint auto-approved per AUTO_CFG=true — FBK pipeline confirmed by unit tests in prior plans
 
 ### Pending Todos
 
@@ -104,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T06:52:16.563Z
-Stopped at: Completed 03-feedback-and-testing 03-03-PLAN.md
+Last session: 2026-03-22T07:07:33.594Z
+Stopped at: Completed 03-feedback-and-testing 03-04-PLAN.md
 Resume file: None
