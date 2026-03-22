@@ -2,7 +2,6 @@ import { History } from 'lucide-react';
 import { useSidePanel } from '@/hooks/useSidePanel';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/StatusBadge';
-import { FeedbackDialog } from '@/components/FeedbackDialog';
 import { SessionMeta, InitPhase } from '@/lib/types';
 
 interface StatusBadgePassthroughProps {
@@ -81,11 +80,9 @@ export function Header({
             </span>
           </div>
 
-          {/* Status badge + feedback button + history button */}
+          {/* Status badge + history button */}
           <div className="flex items-center gap-1.5">
             {statusBadgeProps && <StatusBadge {...statusBadgeProps} />}
-
-            <FeedbackDialog meta={statusBadgeProps?.meta ?? null} />
 
             {onOpenHistory && (
               <Button

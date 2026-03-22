@@ -13,7 +13,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { text, showTitle, platform, season, episode } = body;
+    const { text, type, showTitle, platform, season, episode } = body;
 
     if (!text?.trim()) {
       return new Response(
@@ -29,6 +29,7 @@ serve(async (req) => {
 
     const { error } = await supabase.from("feedback").insert({
       text: text.trim().slice(0, 2000),
+      type: type === "bug" ? "bug" : "feedback",
       show_title: showTitle ?? null,
       platform: platform ?? null,
       season: season ?? null,

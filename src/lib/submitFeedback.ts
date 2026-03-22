@@ -7,12 +7,14 @@ import { SessionMeta } from '@/lib/types';
 export async function submitFeedback(
   text: string,
   meta: SessionMeta | null,
+  type: 'feedback' | 'bug' = 'feedback',
 ): Promise<void> {
   const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/log-feedback`;
   const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
   const body = {
     text: text.trim().slice(0, 2000),
+    type,
     showTitle: meta?.showTitle ?? null,
     platform: meta?.platform ?? null,
     season: meta?.season ?? null,
