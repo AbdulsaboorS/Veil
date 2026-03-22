@@ -1,6 +1,7 @@
 import { type RefObject } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChatStatusBar } from '@/components/ChatStatusBar';
+import { FeedbackDialog } from '@/components/FeedbackDialog';
 import { Loader2, ArrowUp } from 'lucide-react';
 import { ChatMessage, SessionMeta, InitPhase } from '@/lib/types';
 
@@ -180,6 +181,10 @@ export function QAStep({
           }
         </button>
       </form>
+
+      <div className="flex justify-center pt-0.5">
+        <FeedbackDialog meta={meta ?? null} />
+      </div>
 
       {error && (
         <div className="text-xs text-destructive px-1">{error}</div>

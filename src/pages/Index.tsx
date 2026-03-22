@@ -4,7 +4,6 @@ import { ChatPanel } from '@/components/ChatPanel';
 import { QAStep } from '@/components/steps/QAStep';
 import { EpisodePicker } from '@/components/EpisodePicker';
 import { HistorySheet } from '@/components/HistorySheet';
-import { FeedbackDialog } from '@/components/FeedbackDialog';
 import { useChat } from '@/hooks/useChat';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useSidePanel } from '@/hooks/useSidePanel';
@@ -266,10 +265,6 @@ function SidePanelApp() {
 
         </div>
       </main>
-
-      <div className="flex justify-center py-3">
-        <FeedbackDialog meta={meta} />
-      </div>
 
       <HistorySheet
         open={isHistoryOpen}
