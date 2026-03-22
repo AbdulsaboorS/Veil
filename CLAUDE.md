@@ -166,37 +166,30 @@ After making changes, run this quick manual check to catch regressions:
 | Netflix recap not saving (stale `activeSessionIdRef`) | Fixed 2026-03-07 — all `updateContext` calls now pass explicit `sessionId` |
 | Netflix episode navigation dedup broken (trackId in URL) | Fixed 2026-03-07 — sidepanel.js + useInitFlow.ts use pathname only |
 | Crunchyroll homepage false-positive detection | Fixed 2026-03-07 — content.js Methods 4/5 gated to `/series/` and `/watch/` paths |
-| Netflix episode number unreliable | **Open** — player UI only; active session may show wrong episode. Needs KB (content ID → episode mapping). |
+| Netflix episode number unreliable | **Descoped (v1)** — Netflix support deferred post-Web Store submission. |
 | Netflix no-episode path skips AniList | **Fixed 2026-03-08** — `doTVMazeLookupAndCreateSession` now calls `get-show-context`, which includes AniList fallback. `showSummary = kbData.context`. |
 | Netflix content ID not used for fast DB lookup | **Fixed 2026-03-08** — Phase 2: `useInitFlow` extracts `netflixContentId` from URL and forwards to `get-show-context`; Step 0 fast-path returns O(1) cached result; mapping written on all cold/warm paths. |
-| Netflix episode not updating on "Next Episode" click | **Fix in progress** — Added `chrome.webNavigation.onHistoryStateUpdated` listener in `background.js` (Netflix only) + `"webNavigation"` permission in manifest. Sends `REDETECT_SHOW_INFO` immediately on pushState nav. Awaiting user confirmation. |
-| Netflix movies cause infinite "Detecting..." loop | **Fix in progress** — Replaced orphaned `<title>` element observer with `document.head` observer + 1s/2s/3s retry polling. Awaiting user confirmation. |
+| Netflix episode not updating on "Next Episode" click | **Descoped (v1)** — Netflix deferred post-Web Store submission. |
+| Netflix movies cause infinite "Detecting..." loop | **Descoped (v1)** — Netflix deferred post-Web Store submission. |
 | Crunchyroll movies not supported | **Won't fix (v1)** — Movies have no season/episode in URL; panel shows needs-episode with no way to resolve. Intentionally out of scope for Crunchyroll v1. |
 | Panel re-detection on open/close | **Fixed 2026-03-15** — Session-first init in `useInitFlow.ts` jumps to `ready` instantly if active session exists. 8s grace period prevents reset on brief navigation away. |
 | Crunchyroll SPA title "Most Popular Anime S..." overriding session | **Fixed 2026-03-15** — `content.js` filters out known Crunchyroll browse/marketing titles before storing. |
 | Spoiler refusal classification labels showing in chat | **Fixed 2026-03-15** — System prompt updated to classify silently. |
 | Spoiler blocked badge animation | **Done 2026-03-15** — `🛡️ Spoiler Blocked` badge with spring-pop animation appears after spoiler-risk responses. |
 | Audit pass not wired / no "Safety edit applied" toast | **Fixed 2026-03-19** — `classify-question` + `audit-answer` deployed; `wasModified` check added to `useChat.ts`; toast shown when audit modifies the answer. |
-| Subtitle context not reaching chat model | **In progress 2026-03-21** — OpenSubtitles pipeline built and deployed. 390 cues load for JJK S1E6. Blocked: Crunchyroll video is in cross-origin iframe, `findMainVideo()` returns null in main frame. Fix described in Section 8 #1. |
+| System prompt over-refuses in-episode questions | **Fixed 2026-03-22** — Option C deployed: soft within-episode spoiler rule. Answers in-episode questions helpfully; only blocks "how does this episode end / what ultimately happens" questions. Tone split: factual on genuine answers, witty on refusals. Name updated SpoilerShield → Veil. |
+| Subtitle context not reaching chat model | **In progress 2026-03-21** — OpenSubtitles pipeline built, 390 cues fetch correctly. Real-time sync via video.currentTime not feasible (player in non-accessible iframe). New approach: user inputs episode timestamp (MM:SS) → cues up to that point appended to session context. |
 
 ---
 
 ## 8. Upcoming Work (Prioritized)
 
-1. **🔴 NEXT TASK: Fix Crunchyroll subtitle currentTime relay** — The subtitle cue pipeline is fully built. Only missing piece: `video.currentTime` is inaccessible from the main frame because Crunchyroll's player is in a cross-origin iframe at `static.crunchyroll.com/vilos-v2/...`. Fix:
-   - Add `"https://static.crunchyroll.com/*"` to `host_permissions` in `manifest.json`
-   - Create `extension/crunchyroll-time-relay.js` — a tiny content script (~15 lines) injected into the iframe that polls `document.querySelector('video')?.currentTime` every 500ms and sends it via `window.parent.postMessage({ type: '__VEIL_VIDEO_TIME__', currentTime }, '*')`
-   - In `extension/content.js` (main frame), listen for `__VEIL_VIDEO_TIME__` messages and use that `currentTime` in the `startOsLoop` sync loop instead of calling `findMainVideo()`
-   - Add second `content_scripts` entry in `manifest.json` targeting `https://static.crunchyroll.com/vilos-v2/*` with `all_frames: true`, `run_at: document_idle`
-   - Rebuild bundle: `BUILD_TARGET=extension npm run build`
-   - Test: `chrome.storage.local.get('veil_context', console.log)` in side panel DevTools should show current subtitle lines while JJK S1E6 plays
-2. **Chrome Web Store submission** – After subtitle feature confirmed working.
+1. **🔴 NEXT TASK: Subtitle timestamp input** — Cues are already fetched (390 for JJK S1E6). Add a MM:SS timestamp input to the UI. On submit: filter `veil_subtitle_cues` to cues with `endMs <= inputMs`, format as dialogue text, append to session context. Chat model then has rich episode dialogue as context, spoiler-safe (user controls how far they've watched).
+2. **🔴 Chrome Web Store submission** — Target Crunchyroll-only v1. Prep store listing, screenshots, privacy policy. Netflix support deferred to v1.1.
 3. ~~**Re-enable audit pass**~~ – **Done 2026-03-19** — audit pass active; "Safety edit applied" toast wired.
-4. **Fix Netflix SPA navigation** – Fix in progress (webNavigation listener added). Confirm working, then close out.
-5. **Fix Netflix movie scraping** – Fix in progress (head observer + retry polling). Confirm working, then close out.
-6. **Add `season`/`episode` to `id_mappings`** – DB migration for episode-level Netflix content ID mappings.
-7. **Polish StatusBadge popover** – Show names truncate at 18 chars in badge; full name visible in popover.
-8. **Crunchyroll movie support** – Out of scope for v1. Movies show needs-episode with no resolution path.
+4. **Netflix support (v1.1)** – Deferred post-submission. Includes: SPA nav fix, movie scraping fix, episode-level `id_mappings`.
+5. **Polish StatusBadge popover** – Show names truncate at 18 chars in badge; full name visible in popover.
+6. **Crunchyroll movie support** – Out of scope for v1. Movies show needs-episode with no resolution path.
 
 ---
 

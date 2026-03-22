@@ -22,6 +22,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
   const [phase, setPhase] = useState<InitPhase>('detecting');
   const [detectedShowInfo, setDetectedShowInfo] = useState<DetectedShowInfo | null>(null);
   const [isDetecting, setIsDetecting] = useState(false);
+  const [subtitleCues, setSubtitleCues] = useState<Array<{startMs: number; endMs: number; text: string}>>([]);
 
   const isSidePanel = useSidePanel();
   const { fetchRecap, isLoading: isLoadingRecap } = useEpisodeRecap();
@@ -437,6 +438,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (data?.cues?.length) {
+          setSubtitleCues(data.cues);
           window.postMessage({ type: 'VEIL_SUBTITLE_CUES', payload: data.cues }, '*');
         }
       })
@@ -503,11 +505,37 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
     }, 3000);
   }, []);
 
+  const applySubtitleTimestamp = useCallback((mmss: string) => {
+    const parts = mmss.split(':');
+    if (parts.length !== 2) return;
+    const [m, s] = parts.map(Number);
+    if (isNaN(m) || isNaN(s)) return;
+    const inputMs = (m * 60 + s) * 1000;
+
+    const filtered = subtitleCues.filter(c => c.endMs <= inputMs);
+    if (!filtered.length) return;
+
+    const allLines = filtered.map(c => c.text).join('\n');
+    // Cap at 5000 chars, keeping the most recent lines (closest to the timestamp)
+    const cappedLines = allLines.length > 5000 ? allLines.slice(allLines.length - 5000) : allLines;
+
+    const currentContext = sessionStoreRef.current.activeSession?.meta.context ?? '';
+    // Strip any previously applied subtitle block before re-appending
+    const baseContext = currentContext.replace(/\n\n\[Dialogue up to [^\]]+\]\n[\s\S]*$/, '');
+    const enriched = baseContext
+      ? `${baseContext}\n\n[Dialogue up to ${mmss}]\n${cappedLines}`
+      : `[Dialogue up to ${mmss}]\n${cappedLines}`;
+
+    sessionStoreRef.current.updateContext(enriched);
+  }, [subtitleCues]);
+
   return {
     phase,
     detectedShowInfo,
     isDetecting,
     isLoadingRecap,
+    subtitleCues,
+    applySubtitleTimestamp,
     confirmManualSetup,
     requestRedetect,
   };

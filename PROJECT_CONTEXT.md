@@ -229,6 +229,12 @@ See **ROADMAP.md** for desired future state and feature ideas.
 
 > Keep this ordered **newest first**. Each entry should be 1–3 bullet points.
 
+### 2026-03-22 (System prompt + scope)
+- **Netflix descoped from v1** — Netflix support deferred post-Web Store submission. Crunchyroll-only v1.
+- **System prompt: Option C within-episode spoiler rule** — Soft rule added: model answers in-episode questions helpfully but blocks "how does this episode end / what ultimately happens to X in this episode." Prevents within-episode spoilers without over-refusing normal questions.
+- **System prompt: tone split** — Factual/clear on genuine answers; wit reserved for spoiler refusals. Refusals now always signal spoiler protection clearly. Name updated SpoilerShield → Veil throughout prompt.
+- **Subtitle cue plumbing added to useInitFlow** — `subtitleCues` state + `applySubtitleTimestamp` callback in place for future auto-detection (Option D). No UI exposed yet.
+
 ### 2026‑03‑08 (Phase 2: Netflix Content ID Mapping)
 
 - **Netflix fast-path lookup:** `get-show-context` now accepts `netflixContentId`. Step 0 does an O(1) `id_mappings` lookup before any TVMaze/AniList calls — returns `confidence: "cached"` instantly for returning users.

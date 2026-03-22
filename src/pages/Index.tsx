@@ -79,7 +79,7 @@ const defaultSetup: WatchSetup = {
 
 function SidePanelApp() {
   const sessionStore = useSessionStore();
-  const { phase, isDetecting, isLoadingRecap, confirmManualSetup, requestRedetect } = useInitFlow(sessionStore);
+  const { phase, isDetecting, isLoadingRecap, subtitleCues, applySubtitleTimestamp, confirmManualSetup, requestRedetect } = useInitFlow(sessionStore);
 
   // Warm-ping: fire both edge functions as soon as the panel opens so they're
   // hot by the time the user asks their first question.
