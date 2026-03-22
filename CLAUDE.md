@@ -178,18 +178,19 @@ After making changes, run this quick manual check to catch regressions:
 | Spoiler blocked badge animation | **Done 2026-03-15** — `🛡️ Spoiler Blocked` badge with spring-pop animation appears after spoiler-risk responses. |
 | Audit pass not wired / no "Safety edit applied" toast | **Fixed 2026-03-19** — `classify-question` + `audit-answer` deployed; `wasModified` check added to `useChat.ts`; toast shown when audit modifies the answer. |
 | System prompt over-refuses in-episode questions | **Fixed 2026-03-22** — Option C deployed: soft within-episode spoiler rule. Answers in-episode questions helpfully; only blocks "how does this episode end / what ultimately happens" questions. Tone split: factual on genuine answers, witty on refusals. Name updated SpoilerShield → Veil. |
-| Subtitle context not reaching chat model | **In progress 2026-03-21** — OpenSubtitles pipeline built, 390 cues fetch correctly. Real-time sync via video.currentTime not feasible (player in non-accessible iframe). New approach: user inputs episode timestamp (MM:SS) → cues up to that point appended to session context. |
+| Subtitle context not reaching chat model | **Tabled** — Real-time sync not feasible (cross-origin iframe). Plumbing kept in useInitFlow for future Option D. |
+| Absolute episode number wrong for long-running anime (e.g. One Piece Ep 1093 shows as S1E1093 or S22E3) | **🔴 OPEN** — Root cause: `parseEpisodeText("Episode 1093")` in content.js maps to `{ season: '1', episode: '1093' }`. `get-show-context` receives wrong params and falls back to show-level context instead of episode-level. Fix: preserve raw absolute episode number separately; use TVMaze `airedEpisodeNumber` lookup. Also add TVMaze episode link to StatusBadge popover for user verification. |
+| Episode-level context not used for long-running anime | **🔴 OPEN** — Connected to above. `get-show-context` called with `season=1, episode=1093` → TVMaze can't match → falls back to show-level overview. Fix: handle absolute episode number lookup in `get-show-context`. |
 
 ---
 
 ## 8. Upcoming Work (Prioritized)
 
-1. **🔴 NEXT TASK: Subtitle timestamp input** — Cues are already fetched (390 for JJK S1E6). Add a MM:SS timestamp input to the UI. On submit: filter `veil_subtitle_cues` to cues with `endMs <= inputMs`, format as dialogue text, append to session context. Chat model then has rich episode dialogue as context, spoiler-safe (user controls how far they've watched).
-2. **🔴 Chrome Web Store submission** — Target Crunchyroll-only v1. Prep store listing, screenshots, privacy policy. Netflix support deferred to v1.1.
-3. ~~**Re-enable audit pass**~~ – **Done 2026-03-19** — audit pass active; "Safety edit applied" toast wired.
+1. **🔴 NEXT TASK: Fix absolute episode number detection + TVMaze link** — Two connected bugs (see Section 7). Files to touch: `extension/content.js` (preserve rawEpisode), `supabase/functions/get-show-context/index.ts` (absolute episode TVMaze lookup), `src/components/StatusBadge.tsx` (display rawEpisode + TVMaze episode link in popover).
+2. **Phase 4: Landing Page** — GSD Phase 4. Polish copy, visual refinements, working waitlist/signup CTA.
+3. **Phase 5: Web Store Launch** — Store listing, screenshots, privacy policy, submission.
 4. **Netflix support (v1.1)** – Deferred post-submission. Includes: SPA nav fix, movie scraping fix, episode-level `id_mappings`.
-5. **Polish StatusBadge popover** – Show names truncate at 18 chars in badge; full name visible in popover.
-6. **Crunchyroll movie support** – Out of scope for v1. Movies show needs-episode with no resolution path.
+5. **Crunchyroll movie support** – Out of scope for v1. Movies show needs-episode with no resolution path.
 
 ---
 
