@@ -60,7 +60,14 @@ Plans:
   1. A feedback entry point (button or menu item) is accessible from within the extension side panel
   2. Submitted feedback is stored in a Supabase table with timestamp, text, and optional metadata (show, platform)
   3. A read-only dashboard (hosted alongside the landing page) displays all submissions, protected by a simple password
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 03-00-PLAN.md — Wave 0: install vitest + create failing test stubs for FBK-01, FBK-02, FBK-03
+- [ ] 03-01-PLAN.md — FeedbackDialog component + submitFeedback utility + Header wiring + extension bundle rebuild (FBK-01, FBK-02 client)
+- [ ] 03-02-PLAN.md — feedback Supabase table migration + log-feedback Edge Function deployment (FBK-02 backend)
+- [ ] 03-03-PLAN.md — /admin dashboard in landing/ with SHA-256 password gate and feedback table (FBK-03)
+- [ ] 03-04-PLAN.md — End-to-end human verify: button in extension → submit → DB row → admin dashboard
 
 ### Phase 4: Landing Page
 **Goal**: The Veil landing page is polished and ready for public traffic — updated copy, visual refinements, and a working waitlist/signup flow
@@ -92,6 +99,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Rebrand | 3/3 | Complete   | 2026-03-20 |
 | 2. Subtitle Context | 4/4 | Complete   | 2026-03-21 |
-| 3. Feedback & Testing | 0/? | Not started | - |
+| 3. Feedback & Testing | 0/5 | Not started | - |
 | 4. Landing Page | 0/? | Not started | - |
 | 5. Web Store Launch | 0/? | Not started | - |
