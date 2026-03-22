@@ -24,9 +24,9 @@ Requirements for v1 Launch milestone.
 
 ### Feedback & Testing
 
-- [ ] **FBK-01**: A feedback entry point (button or menu item) is accessible from within the extension side panel at all times
-- [ ] **FBK-02**: Submitted feedback is stored in a Supabase table with timestamp, text, show name, and platform metadata
-- [ ] **FBK-03**: A read-only dashboard (hosted in `/landing`) displays all submissions, protected by a simple password
+- [x] **FBK-01**: A feedback entry point (button or menu item) is accessible from within the extension side panel at all times
+- [x] **FBK-02**: Submitted feedback is stored in a Supabase table with timestamp, text, show name, and platform metadata
+- [x] **FBK-03**: A read-only dashboard (hosted in `/landing`) displays all submissions, protected by a simple password
 
 ### Landing Page
 
