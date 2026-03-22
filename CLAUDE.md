@@ -179,15 +179,13 @@ After making changes, run this quick manual check to catch regressions:
 | Audit pass not wired / no "Safety edit applied" toast | **Fixed 2026-03-19** — `classify-question` + `audit-answer` deployed; `wasModified` check added to `useChat.ts`; toast shown when audit modifies the answer. |
 | System prompt over-refuses in-episode questions | **Fixed 2026-03-22** — Option C deployed: soft within-episode spoiler rule. Answers in-episode questions helpfully; only blocks "how does this episode end / what ultimately happens" questions. Tone split: factual on genuine answers, witty on refusals. Name updated SpoilerShield → Veil. |
 | Subtitle context not reaching chat model | **Tabled** — Real-time sync not feasible (cross-origin iframe). Plumbing kept in useInitFlow for future Option D. |
-| Absolute episode number wrong for long-running anime (e.g. One Piece Ep 1093 shows as S1E1093 or S22E3) | **🔴 OPEN** — Root cause: `parseEpisodeText("Episode 1093")` in content.js maps to `{ season: '1', episode: '1093' }`. `get-show-context` receives wrong params and falls back to show-level context instead of episode-level. Fix: preserve raw absolute episode number separately; use TVMaze `airedEpisodeNumber` lookup. Also add TVMaze episode link to StatusBadge popover for user verification. |
-| Episode-level context not used for long-running anime | **🔴 OPEN** — Connected to above. `get-show-context` called with `season=1, episode=1093` → TVMaze can't match → falls back to show-level overview. Fix: handle absolute episode number lookup in `get-show-context`. |
+| Episode-level context not loading for long-running anime (One Piece etc.) | **🔴 OPEN (attempted fix reverted 2026-03-22)** — Crunchyroll JSON-LD provides season/episode in their own numbering (e.g. S22E6) which doesn't match TVMaze's numbering. TVMaze episodes for long-running anime often have no summary text anyway. Attempted fix (rawEpisode + airedEpisodeNumber lookup) was reverted — approach was sound but TVMaze data quality is the blocker. **Recommended next approach:** Use MyAnimeList/Jikan API which has better episode-level data for long-running anime, or Gemini web search fallback when TVMaze returns no episode summary. |
 
 ---
 
 ## 8. Upcoming Work (Prioritized)
 
-1. **🔴 NEXT TASK: Fix absolute episode number detection + TVMaze link** — Two connected bugs (see Section 7). Files to touch: `extension/content.js` (preserve rawEpisode), `supabase/functions/get-show-context/index.ts` (absolute episode TVMaze lookup), `src/components/StatusBadge.tsx` (display rawEpisode + TVMaze episode link in popover).
-2. **Phase 4: Landing Page** — GSD Phase 4. Polish copy, visual refinements, working waitlist/signup CTA.
+1. **Phase 4: Landing Page** — GSD Phase 4. Polish copy, visual refinements, working waitlist/signup CTA.
 3. **Phase 5: Web Store Launch** — Store listing, screenshots, privacy policy, submission.
 4. **Netflix support (v1.1)** – Deferred post-submission. Includes: SPA nav fix, movie scraping fix, episode-level `id_mappings`.
 5. **Crunchyroll movie support** – Out of scope for v1. Movies show needs-episode with no resolution path.
