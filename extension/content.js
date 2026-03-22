@@ -52,12 +52,24 @@ function parseEpisodeText(text) {
   // "Season 1, Episode 4" / "Season 1 Episode 4"
   m = text.match(/Season\s+(\d+)[,\s]+Episode\s+(\d+)/i);
   if (m) return { season: m[1], episode: m[2] };
-  // "Episode 4" alone → default season 1
+  // "Episode 4" alone → default season 1.
+  // For large numbers (>99) there's no season context — flag as potential absolute
+  // episode number so the backend can resolve it via airedEpisodeNumber lookup.
   m = text.match(/Episode\s+(\d+)/i);
-  if (m) return { season: '1', episode: m[1] };
+  if (m) {
+    const ep = m[1];
+    return parseInt(ep) > 99
+      ? { season: '1', episode: ep, rawEpisode: ep }
+      : { season: '1', episode: ep };
+  }
   // "Ep. 4" / "Ep 4"
   m = text.match(/Ep\.?\s*(\d+)/i);
-  if (m) return { season: '1', episode: m[1] };
+  if (m) {
+    const ep = m[1];
+    return parseInt(ep) > 99
+      ? { season: '1', episode: ep, rawEpisode: ep }
+      : { season: '1', episode: ep };
+  }
   return null;
 }
 

@@ -110,7 +110,7 @@ serve(async (req) => {
   }
 
   try {
-    const { showTitle, platform, season, episode, tvmazeId, netflixContentId } = await req.json();
+    const { showTitle, platform, season, episode, tvmazeId, netflixContentId, rawEpisode } = await req.json();
 
     if (!showTitle?.trim() && !netflixContentId) {
       return new Response(
@@ -236,6 +236,7 @@ serve(async (req) => {
     let episodeSummary: string | null = null;
     let showDescription: string | null = null;
     let anilistId: number | null = showRow?.anilist_id ?? null;
+    let tvmazeEpisodeUrl: string | null = null;
 
     // 2a. TVMaze search (only if we don't already have a tvmaze_id)
     if (!resolvedTvmazeId) {
@@ -261,14 +262,30 @@ serve(async (req) => {
 
     // 2b. TVMaze episode (if we have both a tvmaze_id and season+episode)
     if (resolvedTvmazeId && hasEpisode) {
+      const isAbsoluteEpisode = rawEpisode && parseInt(rawEpisode) > 99 && season === 1;
       try {
-        const epRes = await fetch(
-          `https://api.tvmaze.com/shows/${resolvedTvmazeId}/episodebynumber?season=${season}&number=${episode}`
-        );
-        if (epRes.ok) {
-          const epData = await epRes.json();
-          if (epData.summary) {
-            episodeSummary = stripHtml(epData.summary) || null;
+        if (isAbsoluteEpisode) {
+          // Long-running anime: "Episode 1093" has no season context on Crunchyroll.
+          // Fetch all episodes and find by airedEpisodeNumber.
+          const allEpsRes = await fetch(
+            `https://api.tvmaze.com/shows/${resolvedTvmazeId}/episodes?specials=0`
+          );
+          if (allEpsRes.ok) {
+            const allEps: Array<{ id: number; url: string; season: number; number: number; airedEpisodeNumber: number; summary: string | null }> = await allEpsRes.json();
+            const target = allEps.find(e => e.airedEpisodeNumber === parseInt(rawEpisode));
+            if (target) {
+              if (target.summary) episodeSummary = stripHtml(target.summary) || null;
+              tvmazeEpisodeUrl = target.url;
+            }
+          }
+        } else {
+          const epRes = await fetch(
+            `https://api.tvmaze.com/shows/${resolvedTvmazeId}/episodebynumber?season=${season}&number=${episode}`
+          );
+          if (epRes.ok) {
+            const epData = await epRes.json();
+            if (epData.summary) episodeSummary = stripHtml(epData.summary) || null;
+            if (epData.url) tvmazeEpisodeUrl = epData.url;
           }
         }
       } catch {
@@ -449,6 +466,7 @@ serve(async (req) => {
       tvmazeId: resolvedTvmazeId,
       anilistId,
       showDbId,
+      tvmazeEpisodeUrl,
       confidence: "inferred",
     }, corsHeaders);
   } catch (error) {

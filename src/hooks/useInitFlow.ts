@@ -8,7 +8,7 @@ import { toast } from '@/components/ui/sonner';
 interface DetectedShowInfo {
   platform: string;
   showTitle: string;
-  episodeInfo?: { season: string; episode: string };
+  episodeInfo?: { season: string; episode: string; rawEpisode?: string };
   url?: string;
 }
 
@@ -78,6 +78,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
 
       const season = showInfo.episodeInfo?.season ?? '';
       const episode = showInfo.episodeInfo?.episode ?? '';
+      const rawEpisode = showInfo.episodeInfo?.rawEpisode;
       const hasEpisode = Boolean(season && episode);
 
       // If we have no showId, no episode, AND no title → genuine false positive.
@@ -92,7 +93,9 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
         showId,
         showInfo.platform,
         season,
-        episode
+        episode,
+        undefined,
+        rawEpisode
       );
 
       if (hasEpisode) {
@@ -147,9 +150,12 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
         );
         const currentMeta = allSessions.find(s => s.sessionId === sessionId);
         if (!currentMeta?.context && showId) {
-          fetchRecapRef.current(showId, parseInt(season), parseInt(episode), resolvedTitle).then(result => {
+          fetchRecapRef.current(showId, parseInt(season), parseInt(episode), resolvedTitle, rawEpisode).then(result => {
             if (result.summary) {
               sessionStoreRef.current.updateContext(result.summary, sessionId);
+            }
+            if (result.tvmazeEpisodeUrl) {
+              sessionStoreRef.current.updateSessionFields(sessionId, { tvmazeEpisodeUrl: result.tvmazeEpisodeUrl });
             }
           });
         }
@@ -200,7 +206,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
     const active = sessionStoreRef.current.activeSession;
     if (!active?.meta?.showTitle) return;
 
-    const { showTitle, season, episode, platform, sessionId, context, showId } = active.meta;
+    const { showTitle, season, episode, rawEpisode, platform, sessionId, context, showId } = active.meta;
 
     lastProcessedKeyRef.current = `${showTitle}|${season}|${episode}`;
     hasReceivedShowInfo.current = true;
@@ -212,9 +218,12 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
 
     // Retry recap fetch if context was never populated (e.g. previous network error).
     if (!context && showId && season && episode) {
-      fetchRecapRef.current(showId, parseInt(season), parseInt(episode), showTitle).then(result => {
+      fetchRecapRef.current(showId, parseInt(season), parseInt(episode), showTitle, rawEpisode).then(result => {
         if (result.summary) {
           sessionStoreRef.current.updateContext(result.summary, sessionId);
+        }
+        if (result.tvmazeEpisodeUrl) {
+          sessionStoreRef.current.updateSessionFields(sessionId, { tvmazeEpisodeUrl: result.tvmazeEpisodeUrl });
         }
       });
     }
@@ -234,7 +243,7 @@ export function useInitFlow(sessionStore: ReturnType<typeof useSessionStore>) {
       const showInfo = maybe.payload as {
         platform?: string;
         showTitle?: string;
-        episodeInfo?: { season: string; episode: string };
+        episodeInfo?: { season: string; episode: string; rawEpisode?: string };
         url?: string;
       };
 
