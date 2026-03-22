@@ -24,3 +24,6 @@ verify_jwt = false
 
 [functions."get-show-context"]
 verify_jwt = false
+
+[functions."log-feedback"]
+verify_jwt = false

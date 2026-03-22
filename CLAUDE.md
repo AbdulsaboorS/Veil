@@ -222,6 +222,7 @@ supabase functions deploy fetch-fandom-episode
 supabase functions deploy sanitize-episode-context
 supabase functions deploy audit-answer
 supabase functions deploy log-spoiler-report
+supabase functions deploy log-feedback
 ```
 
 ---
