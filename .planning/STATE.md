@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-feedback-and-testing 03-00-PLAN.md
-last_updated: "2026-03-22T06:41:47.293Z"
+stopped_at: Completed 03-feedback-and-testing 03-01-PLAN.md
+last_updated: "2026-03-22T06:45:50.658Z"
 last_activity: 2026-03-20 — Completed plan 01-02 (React src/ rebrand)
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 12
-  completed_plans: 8
+  completed_plans: 9
   percent: 15
 ---
 
@@ -57,6 +57,7 @@ Progress: [█░░░░░░░░░] 15%
 | Phase 02-subtitle-context P02 | 1 | 1 tasks | 0 files |
 | Phase 02-subtitle-context P03 | 2 | 3 tasks | 4 files |
 | Phase 03-feedback-and-testing P00 | 5 | 1 tasks | 5 files |
+| Phase 03-feedback-and-testing P01 | 3 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,8 @@ Recent decisions affecting current work:
 - [Phase 02-subtitle-context]: Plan 02-04 is a pure human-verify checkpoint — no code authored; runtime confirmation of subtitle intercept pipeline in live Chrome session is the only valid verification method
 - [Phase 03-feedback-and-testing]: AdminPage password gate tested as pure sha256 function — Next.js page rendering stays in manual verification
 - [Phase 03-feedback-and-testing]: FBK-03 stubs use Web Crypto in jsdom (no mocking) — passes immediately to give a GREEN baseline before FBK-01/02 implementation
+- [Phase 03-feedback-and-testing]: FeedbackDialog rendered unconditionally in side-panel header — always visible per FBK-01 in all init phases
+- [Phase 03-feedback-and-testing]: @testing-library/jest-dom installed as Rule 3 auto-fix — unblocked toBeInTheDocument assertions in FeedbackDialog tests
 
 ### Pending Todos
 
@@ -95,6 +98,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T06:41:47.292Z
-Stopped at: Completed 03-feedback-and-testing 03-00-PLAN.md
+Last session: 2026-03-22T06:45:50.656Z
+Stopped at: Completed 03-feedback-and-testing 03-01-PLAN.md
 Resume file: None
