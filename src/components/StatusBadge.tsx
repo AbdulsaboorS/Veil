@@ -93,10 +93,7 @@ export function StatusBadge({
     const title = meta.showTitle.length > 22
       ? meta.showTitle.slice(0, 20) + '…'
       : meta.showTitle;
-    // Prefer rawEpisode ("Ep 1093") over S/E notation for absolute episode numbers
-    const ep = meta.season && meta.episode
-      ? (meta.rawEpisode ? `Ep ${meta.rawEpisode}` : `S${meta.season}E${meta.episode}`)
-      : null;
+    const ep = meta.season && meta.episode ? `S${meta.season}E${meta.episode}` : null;
     const label = ep ? `${title} · ${ep}` : title;
 
     // Dot colour: violet when episode known, amber when episode missing
@@ -159,18 +156,6 @@ export function StatusBadge({
               onTimestampChange={() => {}}
             />
           </div>
-        )}
-
-        {/* TVMaze episode link (shown when resolved for absolute episode numbers) */}
-        {meta?.tvmazeEpisodeUrl && (
-          <a
-            href={meta.tvmazeEpisodeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 text-xs text-primary hover:underline"
-          >
-            View episode on TVMaze →
-          </a>
         )}
 
         {/* Context */}

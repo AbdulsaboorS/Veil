@@ -139,8 +139,7 @@ export function useSessionStore() {
     platform: string,
     season: string,
     episode: string,
-    context?: string,
-    rawEpisode?: string
+    context?: string
   ): string => {
     const sessionId = makeSessionId(showId, showTitle, season, episode);
 
@@ -162,7 +161,6 @@ export function useSessionStore() {
         platform,
         season,
         episode,
-        rawEpisode,
         context: context || '',
         lastMessageAt: Date.now(),
         messageCount: 0,
@@ -246,16 +244,6 @@ export function useSessionStore() {
     });
   }, []);
 
-  const updateSessionFields = useCallback((sessionId: string, fields: Partial<SessionMeta>) => {
-    setSessions(prev => {
-      const updated = prev.map(s =>
-        s.sessionId === sessionId ? { ...s, ...fields } : s
-      );
-      writeSessions(updated);
-      return updated;
-    });
-  }, []);
-
   const syncMessageCount = useCallback((sessionId: string) => {
     try {
       const raw = window.localStorage.getItem(`${MESSAGES_PREFIX}${sessionId}`);
@@ -304,7 +292,6 @@ export function useSessionStore() {
     deleteSession,
     updateContext,
     updateEpisode,
-    updateSessionFields,
     syncMessageCount,
     getMessagesKey,
   };

@@ -37,8 +37,6 @@ export interface SessionMeta {
   platform: string;
   season: string;
   episode: string;
-  rawEpisode?: string;        // Crunchyroll absolute episode number (e.g. '1093')
-  tvmazeEpisodeUrl?: string;  // TVMaze episode page URL for user verification
   context: string;        // cached recap text
   lastMessageAt: number;  // Unix ms for sorting
   messageCount: number;

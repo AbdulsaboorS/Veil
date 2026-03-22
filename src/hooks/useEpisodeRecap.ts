@@ -4,7 +4,6 @@ import type { EpisodeSource } from '@/lib/types';
 interface RecapResult {
   summary: string | null;
   source: EpisodeSource;
-  tvmazeEpisodeUrl?: string;
   error?: string;
 }
 
@@ -24,8 +23,7 @@ export function useEpisodeRecap() {
     showId: number,
     season: number,
     episode: number,
-    showTitle?: string,
-    rawEpisode?: string
+    showTitle?: string
   ): Promise<RecapResult> => {
     setIsLoading(true);
 
@@ -55,17 +53,13 @@ export function useEpisodeRecap() {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ showTitle, platform: 'other', season, episode, tvmazeId: showId, rawEpisode }),
+          body: JSON.stringify({ showTitle, platform: 'other', season, episode, tvmazeId: showId }),
         }
       );
 
       if (!response.ok) throw new Error(`get-show-context ${response.status}`);
       const data = await response.json();
-      const result: RecapResult = {
-        summary: data.context,
-        source: data.source,
-        tvmazeEpisodeUrl: data.tvmazeEpisodeUrl ?? undefined,
-      };
+      const result: RecapResult = { summary: data.context, source: data.source };
 
       if (result.summary) {
         localStorage.setItem(cacheKey, JSON.stringify({ ...result, cachedAt: Date.now() }));
