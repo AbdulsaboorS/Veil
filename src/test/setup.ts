@@ -1,3 +1,5 @@
+import '@testing-library/jest-dom';
+
 // Global test setup for Vitest + jsdom
 // Provides a real in-memory localStorage implementation so tests can read
 // and write across calls within the same test, and clears it between tests.
