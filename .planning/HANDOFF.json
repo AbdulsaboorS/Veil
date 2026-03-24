@@ -1,0 +1,48 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-03-24T06:26:08.902Z",
+  "phase": "04",
+  "phase_name": "landing-page",
+  "phase_dir": ".planning/phases/04-landing-page",
+  "plan": 0,
+  "task": 0,
+  "total_tasks": 5,
+  "status": "paused",
+  "completed_tasks": [],
+  "remaining_tasks": [
+    {"id": 1, "name": "Rebuild landing page to match veil.lat", "status": "not_started"},
+    {"id": 2, "name": "Rebrand spoilershield → Veil throughout", "status": "not_started"},
+    {"id": 3, "name": "Update copy to authentic user voice", "status": "not_started"},
+    {"id": 4, "name": "Finalize logo and wire into landing + extension icons", "status": "not_started"},
+    {"id": 5, "name": "Build privacy page at /privacy", "status": "not_started"}
+  ],
+  "blockers": [
+    {"description": "veil.lat deployed code not in git — must reconstruct from URL/screenshots", "type": "technical", "workaround": "Fetch veil.lat directly or use screenshots shared this session"},
+    {"description": "Logo PNG has dark background, not cleanly extractable", "type": "technical", "workaround": "Use remove.bg or Adobe Express, or recreate as SVG"},
+    {"description": "Ideogram and Canva AI credits exhausted", "type": "external", "workaround": "Wait for credit reset before more logo iterations"}
+  ],
+  "human_actions_pending": [
+    {"action": "Test Phase 2 subtitle pipeline on live Crunchyroll (plan 02-04)", "context": "Human verification gate — requires live Chrome session", "blocking": true},
+    {"action": "Logo finalization — try more iterations on Ideogram/Canva when credits reset", "context": "User not 100% committed to current crescent logo", "blocking": false}
+  ],
+  "decisions": [
+    {"decision": "Logo = hollow crescent/soul reaper shape", "rationale": "User selected from Canva generations, vaillogo.png is the reference", "phase": "04"},
+    {"decision": "Landing page base = veil.lat version, not VeilProtocol tab design", "rationale": "User rejected new tabbed design, wants to refine existing deployed version", "phase": "04"},
+    {"decision": "Domain = veil.lat", "rationale": "User acquired new domain this session", "phase": "04"},
+    {"decision": "Privacy page = same domain (/privacy route)", "rationale": "Required for Chrome Web Store review", "phase": "04"},
+    {"decision": "Footer = coming soon / email waitlist mode", "rationale": "Extension not yet on store", "phase": "04"},
+    {"decision": "Do NOT use VeilProtocol tabbed section", "rationale": "User explicitly rejected this design direction", "phase": "04"}
+  ],
+  "uncommitted_files": [
+    "landing/app/page.tsx",
+    "landing/package-lock.json",
+    "landing/.superdesign/",
+    "landing/public/veillogo.png",
+    "extension/app/assets/index.css",
+    ".planning/STATE.md",
+    "PROJECT.md",
+    "extension/icons/veil-icon.svg"
+  ],
+  "next_action": "Fetch https://veil.lat, reconstruct landing/app/page.tsx to match it exactly, then begin refinements (rebrand, copy, logo)",
+  "context_notes": "Secondary agent session. Main agent handling Phase 2 simultaneously. User taste: minimal, tuff, anime-native. Key copy voice: 'no more fearing the search bar', 'just ask veil, he's rooting for you'. Hero headline to keep: 'AI answers for every question you fear to Google.' with 'you fear to Google.' in purple."
+}
