@@ -1,8 +1,8 @@
-# spoilershield
+# Veil
 
 *A spoiler-safe Q&A side panel for anime & TV — built as a Chrome extension.*
 
-SpoilerShield lets you ask questions while watching a show without getting spoiled. It lives in Chrome's side panel alongside the video player, detects what you're watching automatically, and answers questions using only what you've already seen.
+Veil lets you ask questions while watching a show without getting spoiled. It lives in Chrome's side panel alongside the video player, detects what you're watching automatically, and answers questions using only what you've already seen.
 
 Built end-to-end: product design, extension UX, React frontend, AI pipeline, and Supabase Edge Functions.
 
@@ -99,4 +99,3 @@ spoiler-shield/
 - Publish to Chrome Web Store
 - Timestamp-aware answers (knowing exactly what scene you're at mid-episode)
 - Broader platform support
-- Re-enable second-pass audit for spoiler-risk answers
