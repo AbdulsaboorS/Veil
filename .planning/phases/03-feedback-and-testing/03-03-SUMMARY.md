@@ -58,7 +58,7 @@ completed: 2026-03-22
 ## Accomplishments
 
 - `landing/app/admin/page.tsx` renders a centered password gate when not authenticated, full feedback table when unlocked
-- Correct password (`veil-admin-2026`) computes SHA-256 hash client-side, compares to `NEXT_PUBLIC_ADMIN_HASH`, persists to `localStorage('veil_admin_auth')`
+- Correct password (must match `NEXT_PUBLIC_ADMIN_HASH` via SHA-256 client-side) persists to `localStorage('veil_admin_auth')`
 - Incorrect password shows inline error; gate stays visible
 - Authenticated view fetches `/rest/v1/feedback?order=created_at.desc&limit=200` via raw Supabase REST fetch (no @supabase/supabase-js)
 - Responsive table: Time + Feedback columns always visible; Show, Platform, Ep columns hidden on mobile, shown on md+
@@ -94,11 +94,7 @@ None - plan executed exactly as written.
 
 ## User Setup Required
 
-To deploy the admin page to Vercel, add these environment variables in the Vercel project dashboard for the `landing` app:
-
-- `NEXT_PUBLIC_SUPABASE_URL` = `https://dbileyqtnisyqzgwwive.supabase.co`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` = `sb_publishable_HaYuv967he3WYuYq5u7jgw_WkBkLqic`
-- `NEXT_PUBLIC_ADMIN_HASH` = `6948c5a812b5cd75a8da83d165b21957457a3812097a6c9608c1f38ade9a56e5` (SHA-256 of `veil-admin-2026`)
+To deploy the admin page to Vercel, add `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `NEXT_PUBLIC_ADMIN_HASH` (SHA-256 hex of your chosen admin password; see `landing/.env.example`) in the Vercel project dashboard. Rotate the password by picking a new secret, re-hashing, updating the env var, and redeploying.
 
 ## Next Phase Readiness
 

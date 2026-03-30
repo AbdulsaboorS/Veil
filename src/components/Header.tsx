@@ -1,5 +1,6 @@
 import { History } from 'lucide-react';
 import { useSidePanel } from '@/hooks/useSidePanel';
+import { BetaBadge } from '@/components/BetaBadge';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/StatusBadge';
 import { SessionMeta, InitPhase } from '@/lib/types';
@@ -73,11 +74,12 @@ export function Header({
 
         <div className="relative flex items-center justify-between gap-2">
           {/* Logo + wordmark */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 min-w-0">
             <ShieldLogo size={22} />
             <span className="font-brand text-sm font-semibold tracking-tight text-foreground select-none">
               veil
             </span>
+            <BetaBadge />
           </div>
 
           {/* Status badge + history button */}
