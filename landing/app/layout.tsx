@@ -15,20 +15,26 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "spoilershield — Watch anime. Ask anything. Zero spoilers.",
+  title: "Veil — AI answers for every question you fear to Google.",
   description:
-    "spoilershield lives in your browser's side panel. It detects what you're watching, locks in your episode, and answers your questions safely.",
+    "Veil lives in your browser's side panel. It detects your show, locks in your episode, and answers your questions safely — nothing ahead, ever.",
   openGraph: {
-    title: "spoilershield",
-    description: "Watch anime. Ask anything. Zero spoilers.",
+    title: "Veil",
+    description: "AI answers for every question you fear to Google.",
     type: "website",
   },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${spaceGrotesk.variable}`}>
-      <body className="antialiased">{children}</body>
+    <html
+      lang="en"
+      className={`${dmSans.variable} ${spaceGrotesk.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="antialiased" suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }

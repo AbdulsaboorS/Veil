@@ -1,181 +1,11 @@
 "use client";
 import { useState } from "react";
 
-/* ── Veil logo ────────────────────────────────────────────────── */
-function ShieldLogo({ size = 24 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" aria-hidden="true">
-      <defs>
-        <linearGradient id="vlbg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#1E1C2E" />
-          <stop offset="100%" stopColor="#0F0E1A" />
-        </linearGradient>
-        <radialGradient id="vlglow" cx="50%" cy="52%" r="40%">
-          <stop offset="0%" stopColor="#7C6FF7" stopOpacity="0.25" />
-          <stop offset="100%" stopColor="#7C6FF7" stopOpacity="0" />
-        </radialGradient>
-        <linearGradient id="vlp1" x1="0.3" y1="0" x2="0.7" y2="1">
-          <stop offset="0%" stopColor="#E2DCFF" />
-          <stop offset="55%" stopColor="#9580FF" />
-          <stop offset="100%" stopColor="#5B4FCF" />
-        </linearGradient>
-        <linearGradient id="vlp2" x1="0" y1="0.3" x2="1" y2="0.7">
-          <stop offset="0%" stopColor="#C4B5FD" />
-          <stop offset="55%" stopColor="#7C6FF7" />
-          <stop offset="100%" stopColor="#4C42B8" />
-        </linearGradient>
-        <linearGradient id="vlp3" x1="0.7" y1="0" x2="0.3" y2="1">
-          <stop offset="0%" stopColor="#A78BFA" />
-          <stop offset="55%" stopColor="#6D5FE8" />
-          <stop offset="100%" stopColor="#3D35A0" />
-        </linearGradient>
-      </defs>
-
-      {/* Background rounded square */}
-      <rect width="100" height="100" rx="22" fill="url(#vlbg)" />
-      {/* Soft center glow */}
-      <rect width="100" height="100" rx="22" fill="url(#vlglow)" />
-
-      {/* Fabric petal 1 — points upper-right */}
-      <path
-        d="M 50 52 C 72 42, 78 18, 58 13 C 38 8, 28 28, 50 52 Z"
-        fill="url(#vlp1)"
-        opacity="0.95"
-      />
-      {/* Fabric petal 2 — rotated 120° */}
-      <path
-        d="M 50 52 C 72 42, 78 18, 58 13 C 38 8, 28 28, 50 52 Z"
-        fill="url(#vlp2)"
-        opacity="0.82"
-        transform="rotate(120 50 52)"
-      />
-      {/* Fabric petal 3 — rotated 240° */}
-      <path
-        d="M 50 52 C 72 42, 78 18, 58 13 C 38 8, 28 28, 50 52 Z"
-        fill="url(#vlp3)"
-        opacity="0.70"
-        transform="rotate(240 50 52)"
-      />
-
-      {/* Center highlight */}
-      <circle cx="50" cy="52" r="4" fill="rgba(226,220,255,0.45)" />
-    </svg>
-  );
-}
-
-/* ── Platform logos ───────────────────────────────────────────── */
-function CrunchyrollLogo({ size = 36 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 36 36" fill="none">
-      <circle cx="18" cy="18" r="18" fill="#F47521" />
-      {/* Outer ring */}
-      <circle cx="18" cy="18" r="11.5" fill="none" stroke="white" strokeWidth="2.8" />
-      {/* Inner fill */}
-      <circle cx="18" cy="18" r="6.5" fill="white" />
-      {/* Center dot */}
-      <circle cx="18" cy="18" r="3" fill="#F47521" />
-      {/* Notch cut — right side, simulating the CR open ring */}
-      <rect x="27" y="15.5" width="5" height="5" fill="#F47521" />
-    </svg>
-  );
-}
-
-function NetflixLogo({ size = 36 }: { size?: number }) {
-  // Netflix "N" drawn as paths — no text element for reliability
-  const s = size;
-  const scale = s / 36;
-  const w = 36 * scale;
-  const h = 40 * scale;
-  return (
-    <svg width={w} height={h} viewBox="0 0 36 44" fill="none">
-      <rect width="36" height="44" rx="5" fill="#141414" />
-      {/* Left bar */}
-      <rect x="6" y="6" width="7" height="32" fill="#E50914" />
-      {/* Right bar */}
-      <rect x="23" y="6" width="7" height="32" fill="#E50914" />
-      {/* Diagonal — top-left to bottom-right */}
-      <polygon points="6,6 13,6 30,38 23,38" fill="#E50914" />
-    </svg>
-  );
-}
-
-function PirateLogo({ size = 36 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 36 36" fill="none">
-      <circle cx="18" cy="18" r="18" fill="#1C1B2A" />
-      {/* Skull */}
-      <ellipse cx="18" cy="16" rx="8" ry="7" fill="#54516A" />
-      {/* Eye sockets */}
-      <circle cx="15" cy="15" r="2" fill="#0D0D14" />
-      <circle cx="21" cy="15" r="2" fill="#0D0D14" />
-      {/* Nose */}
-      <ellipse cx="18" cy="18.5" rx="1.2" ry="1" fill="#0D0D14" />
-      {/* Teeth */}
-      <rect x="14.5" y="20.5" width="2" height="2.5" rx="0.5" fill="#0D0D14" />
-      <rect x="17" y="20.5" width="2" height="2.5" rx="0.5" fill="#0D0D14" />
-      <rect x="19.5" y="20.5" width="2" height="2.5" rx="0.5" fill="#0D0D14" />
-      {/* Crossbones */}
-      <line x1="7" y1="29" x2="29" y2="29" stroke="#54516A" strokeWidth="2" strokeLinecap="round" />
-      <circle cx="7" cy="29" r="2" fill="#54516A" />
-      <circle cx="29" cy="29" r="2" fill="#54516A" />
-    </svg>
-  );
-}
-
-/* ── Annotation helpers ───────────────────────────────────────── */
-const DASH_STYLE = {
-  background:
-    "repeating-linear-gradient(to right, rgba(124,111,247,0.45) 0, rgba(124,111,247,0.45) 4px, transparent 4px, transparent 9px)",
-} as const;
-
-function AnnotationLeft({ top, label }: { top: number; label: string }) {
-  return (
-    <div
-      className="pointer-events-none absolute hidden md:flex items-center"
-      style={{ top, left: 0, right: "calc(50% + 150px)" }}
-    >
-      <span className="flex-1 text-right text-[11px] font-medium text-text-secondary pr-2.5 whitespace-nowrap">
-        {label}
-      </span>
-      <div className="h-px w-7 shrink-0" style={DASH_STYLE} />
-      <div className="h-1.5 w-1.5 rounded-full bg-accent/60 shrink-0" />
-    </div>
-  );
-}
-
-function AnnotationRight({
-  top,
-  label,
-  accent = false,
-}: {
-  top: number;
-  label: string;
-  accent?: boolean;
-}) {
-  return (
-    <div
-      className="pointer-events-none absolute hidden md:flex items-center"
-      style={{ top, left: "calc(50% + 150px)", right: 0 }}
-    >
-      <div className="h-1.5 w-1.5 rounded-full bg-accent/60 shrink-0" />
-      <div className="h-px w-7 shrink-0" style={DASH_STYLE} />
-      <span
-        className={`flex-1 text-left text-[11px] font-medium pl-2.5 whitespace-nowrap ${
-          accent ? "text-accent" : "text-text-secondary"
-        }`}
-      >
-        {label}
-      </span>
-    </div>
-  );
-}
-
 /* ── Panel mockup ─────────────────────────────────────────────── */
 function PanelMockup() {
   return (
-    // Wider container on desktop to leave room for annotations
-    <div className="relative mx-auto w-[300px] md:w-[560px]">
-      {/* Glow */}
+    <div className="relative flex items-center justify-center">
+      {/* Glow bloom behind panel */}
       <div
         className="absolute inset-0 -z-10 rounded-full"
         style={{
@@ -185,19 +15,9 @@ function PanelMockup() {
         }}
       />
 
-      {/* Annotations — each `top` value is hand-tuned to align with panel rows */}
-      {/* Left: points at the episode badge in the header */}
-      <AnnotationLeft top={46} label="Auto-detected" />
-      {/* Right: points at the second user message */}
-      <AnnotationRight top={194} label="You ask" />
-      {/* Right: points at the last AI response */}
-      <AnnotationRight top={246} label="Safe answer" accent />
-      {/* Right: points at the status bar */}
-      <AnnotationRight top={298} label="🛡️ Spoiler blocked" accent />
-
       {/* Panel window */}
       <div
-        className="mx-auto w-[300px] overflow-hidden rounded-2xl border border-white/[0.07] bg-bg"
+        className="w-[300px] overflow-visible rounded-2xl border border-white/[0.07] bg-bg"
         style={{
           boxShadow:
             "0 32px 80px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.03)",
@@ -208,34 +28,60 @@ function PanelMockup() {
           <span className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]" />
           <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
           <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
-          <span className="flex-1 text-center text-[10px] text-white/20">Side Panel</span>
+          <span className="flex-1 text-center text-[10px] text-white/20">
+            Side Panel
+          </span>
         </div>
 
         {/* Extension header */}
         <div className="flex items-center justify-between border-b border-white/5 bg-surface/70 px-3 py-2.5 backdrop-blur-md">
-          <div className="flex items-center gap-2">
-            <ShieldLogo size={20} />
+          <div className="flex items-center gap-1">
+            <img
+              src="/veil-icon.svg"
+              alt="Veil"
+              width={24}
+              height={24}
+              className="rounded-[7px] border border-white/35 bg-white/10 p-[1px] shadow-[0_8px_20px_rgba(0,0,0,0.45)]"
+            />
             <span className="font-brand text-sm font-semibold text-text-primary">
-              spoilershield
+              Veil
             </span>
           </div>
-          <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-elevated px-2.5 py-1 text-xs font-medium">
+          <div className="relative flex items-center gap-1.5 rounded-full border border-white/10 bg-elevated px-2.5 py-1 text-xs font-medium">
             <span className="h-1.5 w-1.5 rounded-full bg-accent shrink-0" />
             <span className="text-text-secondary">JJK · S1E4</span>
+
+            {/* Annotation: Auto-detected (anchored to the episode pill) */}
+            <div className="pointer-events-none absolute left-full top-1/2 ml-2 flex -translate-y-1/2 items-center gap-2 text-[11px] text-text-secondary">
+              <span className="w-8 border-t border-dashed border-white/20" />
+              <span>Auto-detected</span>
+            </div>
           </div>
         </div>
 
         {/* Messages */}
         <div className="space-y-2 p-3">
-          <div className="flex justify-end">
+          <div className="relative flex w-full justify-end">
             <div className="max-w-[80%] rounded-2xl rounded-br-[4px] bg-accent px-3.5 py-2 text-[13px] leading-snug text-white">
               Who is Gojo Satoru?
             </div>
+
+            {/* Annotation: You ask (anchored to the first user bubble) */}
+            <div className="pointer-events-none absolute left-full top-1/2 ml-2 flex -translate-y-1/2 items-center gap-2 text-[11px] text-text-secondary">
+              <span className="w-8 border-t border-dashed border-white/20" />
+              <span>You ask</span>
+            </div>
           </div>
-          <div className="flex justify-start">
+          <div className="relative flex w-full justify-start">
             <div className="max-w-[90%] rounded-2xl rounded-bl-[4px] bg-elevated px-3.5 py-2 text-[13px] leading-relaxed text-text-primary">
               Gojo is the strongest jujutsu sorcerer alive — a teacher at Jujutsu
               High known for his Six Eyes and Limitless technique. 💜
+            </div>
+
+            {/* Annotation: Safe answer (anchored to the assistant response bubble) */}
+            <div className="pointer-events-none absolute left-full top-1/2 ml-2 flex -translate-y-1/2 items-center gap-2 text-[11px] text-text-secondary">
+              <span className="w-8 border-t border-dashed border-white/20" />
+              <span>Safe answer</span>
             </div>
           </div>
           <div className="flex justify-end">
@@ -243,10 +89,16 @@ function PanelMockup() {
               Does Yuji die?
             </div>
           </div>
-          <div className="flex justify-start">
+          <div className="relative flex w-full justify-start">
             <div className="max-w-[90%] rounded-2xl rounded-bl-[4px] bg-elevated px-3.5 py-2 text-[13px] leading-relaxed text-text-primary">
               Hmm, I&apos;d rather not say — you&apos;ll enjoy finding that one
               out yourself 😄
+            </div>
+
+            {/* Annotation: Spoiler blocked (anchored to the refusal bubble) */}
+            <div className="pointer-events-none absolute left-full top-1/2 ml-2 flex -translate-y-1/2 items-center gap-2 text-[11px] text-text-secondary">
+              <span className="w-8 border-t border-dashed border-white/20" />
+              <span>🛡️ Spoiler blocked</span>
             </div>
           </div>
         </div>
@@ -284,14 +136,18 @@ function PanelMockup() {
 /* ── Nav ──────────────────────────────────────────────────────── */
 function Nav() {
   return (
-    <nav
-      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 md:px-12"
-      style={{ background: "rgba(13,13,20,0.8)", backdropFilter: "blur(12px)" }}
-    >
-      <div className="flex items-center gap-2">
-        <ShieldLogo size={22} />
+    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 md:px-12"
+      style={{ background: "rgba(13,13,20,0.8)", backdropFilter: "blur(12px)" }}>
+      <div className="flex items-center gap-1">
+        <img
+          src="/veil-icon.svg"
+          alt="Veil"
+          width={30}
+          height={30}
+          className="rounded-[8px] border border-white/35 bg-white/10 p-[1px] shadow-[0_10px_24px_rgba(0,0,0,0.45)]"
+        />
         <span className="font-brand text-sm font-semibold text-text-primary">
-          spoilershield
+          Veil
         </span>
       </div>
       <div className="flex items-center gap-1.5 rounded-full border border-border px-4 py-1.5 text-xs text-text-muted">
@@ -305,7 +161,7 @@ function Nav() {
 function Hero() {
   return (
     <section className="relative flex min-h-screen items-center pt-20">
-      {/* Dot grid */}
+      {/* Dot grid background */}
       <div
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
@@ -314,7 +170,7 @@ function Hero() {
           backgroundSize: "28px 28px",
         }}
       />
-      {/* Violet bloom */}
+      {/* Radial violet bloom — right side */}
       <div
         className="pointer-events-none absolute right-0 top-0 -z-10 h-full w-1/2"
         style={{
@@ -334,17 +190,18 @@ function Hero() {
             </div>
 
             <h1 className="font-brand text-5xl font-bold leading-[1.08] tracking-tight text-text-primary md:text-6xl">
-              AI answers for
+              Safe answers for every
               <br />
-              every question
+              <span className="text-accent">mid-episode question.</span>
               <br />
-              <span className="text-accent">you fear to Google.</span>
+              Zero spoilers.
             </h1>
 
             <p className="max-w-md text-base leading-relaxed text-text-secondary">
-              spoilershield lives in your browser&apos;s side panel. It detects your show and
-              locks in your episode automatically — so when you ask about characters, plot, or
-              powers, it answers from exactly where you are. Nothing ahead. Ever.
+              If you get confused while watching a show, Veil is here for you.
+              No more fearing the search bar and staying confused mid-episode.
+              No more going to Reddit or asking a friend a question that might spoil you.
+              Just ask Veil. He is rooting for you to have the best possible viewing experience.
             </p>
 
             <div className="flex items-center gap-3">
@@ -353,13 +210,7 @@ function Hero() {
                 className="flex cursor-not-allowed items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white opacity-60"
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path
-                    d="M8 2v9M4 7l4 4 4-4"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
+                  <path d="M8 2v9M4 7l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 Add to Chrome
               </button>
@@ -382,7 +233,7 @@ const steps = [
   {
     n: "01",
     title: "Open any show",
-    body: "Navigate to Crunchyroll. spoilershield detects your show and episode automatically — no searching, no typing, no setup.",
+    body: "Navigate to Crunchyroll. Veil detects your show and episode automatically — no searching, no typing, no setup.",
     tag: "Auto-detected",
   },
   {
@@ -394,7 +245,7 @@ const steps = [
   {
     n: "03",
     title: "Get a safe answer",
-    body: "The shield knows exactly where you are in the story. It answers what's safe and refuses what isn't — playfully, never robotically.",
+    body: "Veil knows exactly where you are in the story. Ask about characters, powers, lore — he answers what's safe and refuses what isn't. Playfully. Never robotically.",
     tag: "Spoiler-proof",
   },
 ];
@@ -421,16 +272,21 @@ function HowItWorks() {
               key={step.n}
               className="relative overflow-hidden rounded-2xl border border-border/60 bg-bg p-6"
             >
+              {/* Large muted step number */}
               <span className="font-brand pointer-events-none absolute right-4 top-2 select-none text-7xl font-bold text-text-muted/10">
                 {step.n}
               </span>
+
               <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-2.5 py-1 text-[11px] font-medium text-accent">
                 {step.tag}
               </div>
+
               <h3 className="font-brand mb-2 text-lg font-semibold text-text-primary">
                 {step.title}
               </h3>
-              <p className="text-sm leading-relaxed text-text-secondary">{step.body}</p>
+              <p className="text-sm leading-relaxed text-text-secondary">
+                {step.body}
+              </p>
             </div>
           ))}
         </div>
@@ -461,11 +317,12 @@ function AutomationFlow() {
             Everything else is handled.
           </h2>
           <p className="mt-3 max-w-xl mx-auto text-base text-text-secondary">
-            From the moment you open a show, spoilershield is already working. The only thing
-            you need to worry about is getting your question answered.
+            From the moment you open a show, Veil is already working.
+            The only thing you need to worry about is getting your question answered.
           </p>
         </div>
 
+        {/* Flow */}
         <div className="flex flex-wrap items-center justify-center gap-2">
           {flow.map((step, i) => (
             <div key={i} className="flex items-center gap-2">
@@ -484,33 +341,22 @@ function AutomationFlow() {
                 {step.label}
               </div>
               {i < flow.length - 1 && (
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  className="shrink-0 text-text-muted"
-                >
-                  <path
-                    d="M3 8h10M9 4l4 4-4 4"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0 text-text-muted">
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               )}
             </div>
           ))}
         </div>
 
+        {/* Callout */}
         <div className="mt-12 rounded-2xl border border-accent/15 bg-accent/5 p-8 text-center">
           <p className="font-brand text-xl font-semibold text-text-primary">
-            The only thing you need to do is ask.
+            Just ask. Veil&apos;s got the rest.
           </p>
           <p className="mt-2 text-sm text-text-secondary">
-            No manual episode entry. No pasting recaps. No configuration. Open a show, open
-            the panel, start asking.
+            No episode setup. No pasting recaps. No configuration.
+            Open a show, open the panel, ask anything.
           </p>
         </div>
       </div>
@@ -518,92 +364,56 @@ function AutomationFlow() {
   );
 }
 
-/* ── Platforms ────────────────────────────────────────────────── */
-type Platform = {
-  name: string;
-  status: "live" | "soon";
-  tooltip?: string;
-  logo: React.ReactNode;
-  tag?: React.ReactNode;
-};
-
-function PlatformCard({ platform }: { platform: Platform }) {
-  const isLive = platform.status === "live";
-
+/* ── Platform icons ───────────────────────────────────────────── */
+function CrunchyrollIcon() {
   return (
-    <div className="group relative">
-      <div
-        className={`flex flex-col items-center gap-3 rounded-2xl border px-8 py-6 transition-colors ${
-          isLive
-            ? "border-border/60 bg-bg"
-            : "border-border/30 bg-bg/50 opacity-60 hover:opacity-80"
-        }`}
-      >
-        {/* Logo */}
-        <div className="relative">
-          {platform.logo}
-          {platform.tag && (
-            <div className="absolute -top-2 -right-3">{platform.tag}</div>
-          )}
-        </div>
-
-        {/* Name + status */}
-        <div className="flex flex-col items-center gap-1 text-center">
-          <span
-            className={`font-brand text-sm font-semibold ${
-              isLive ? "text-text-primary" : "text-text-muted"
-            }`}
-          >
-            {platform.name}
-          </span>
-          {isLive ? (
-            <span className="flex items-center gap-1 text-[11px] text-accent">
-              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-              Live
-            </span>
-          ) : (
-            <span className="text-[11px] text-text-muted">Coming soon</span>
-          )}
-        </div>
-      </div>
-
-      {/* Hover tooltip — only for non-live platforms */}
-      {!isLive && platform.tooltip && (
-        <div
-          className="pointer-events-none absolute -top-2 left-1/2 z-20 w-56 -translate-x-1/2 -translate-y-full rounded-xl border border-border/80 bg-elevated px-3.5 py-2.5 text-center text-xs leading-relaxed text-text-secondary opacity-0 shadow-xl transition-opacity duration-200 group-hover:opacity-100"
-          style={{ backdropFilter: "blur(8px)" }}
-        >
-          {platform.tooltip}
-          {/* Arrow */}
-          <div className="absolute -bottom-[5px] left-1/2 h-2.5 w-2.5 -translate-x-1/2 rotate-45 border-b border-r border-border/80 bg-elevated" />
-        </div>
-      )}
-    </div>
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+      <circle cx="16" cy="16" r="16" fill="#F47521" />
+      <circle cx="16" cy="16" r="10" fill="none" stroke="white" strokeWidth="2.5" />
+      <circle cx="20" cy="12" r="3.5" fill="white" />
+    </svg>
   );
 }
 
+function NetflixIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <rect x="0" y="0" width="32" height="32" rx="8" fill="#141414" />
+      <path d="M9 6H12.3L20 22.2V26H16.7L9 9.8V6Z" fill="#B00610" />
+      <path d="M19.7 6H23V26H19.7V6Z" fill="#E50914" />
+      <path d="M9 6H12.3V26H9V6Z" fill="#E50914" />
+      <path d="M12.3 6H15.6L23 22.2V26H19.7L12.3 9.8V6Z" fill="#7A020A" />
+    </svg>
+  );
+}
+
+/* ── Platforms ────────────────────────────────────────────────── */
+const platforms = [
+  {
+    name: "Crunchyroll",
+    status: "Live",
+    live: true,
+    tooltip: null,
+    Icon: CrunchyrollIcon,
+  },
+  {
+    name: "Netflix",
+    status: "Coming soon",
+    live: false,
+    tooltip: "Netflix hides episode info inside the player overlay — we're building a reliable way to capture it.",
+    Icon: NetflixIcon,
+  },
+  {
+    name: "Pirate Sites",
+    status: "Coming soon",
+    live: false,
+    tooltip: "We see you. 👀 Support is in the works — we'll keep it quiet. 🤫",
+    Icon: () => <div className="flex h-8 w-8 items-center justify-center text-2xl">🤫</div>,
+  },
+];
+
 function Platforms() {
-  const platforms: Platform[] = [
-    {
-      name: "Crunchyroll",
-      status: "live",
-      logo: <CrunchyrollLogo size={42} />,
-    },
-    {
-      name: "Netflix",
-      status: "soon",
-      tooltip:
-        "Netflix hides episode info inside the player overlay — we're building a reliable way to capture it.",
-      logo: <NetflixLogo size={42} />,
-    },
-    {
-      name: "Pirate Sites",
-      status: "soon",
-      tooltip: "We see you. 👀 Support is in the works — we'll keep it quiet. 🤫",
-      logo: <PirateLogo size={42} />,
-      tag: <span className="text-base leading-none">🤫</span>,
-    },
-  ];
+  const [hovered, setHovered] = useState<string | null>(null);
 
   return (
     <section className="border-t border-border/40 bg-surface py-20">
@@ -611,14 +421,44 @@ function Platforms() {
         <p className="mb-10 text-center font-brand text-xs font-semibold uppercase tracking-widest text-text-muted">
           Works where you watch
         </p>
-
         <div className="flex flex-wrap items-start justify-center gap-4">
           {platforms.map((p) => (
-            <PlatformCard key={p.name} platform={p} />
+            <div
+              key={p.name}
+              className={`relative flex flex-col items-center gap-3 rounded-2xl border p-6 transition-all duration-200 ${
+                p.live
+                  ? "border-border/60 bg-bg"
+                  : "border-border/30 bg-bg opacity-50 hover:opacity-80 cursor-default"
+              }`}
+              style={{ minWidth: 140 }}
+              onMouseEnter={() => !p.live && setHovered(p.name)}
+              onMouseLeave={() => setHovered(null)}
+            >
+              <p.Icon />
+              <div className="text-center">
+                <p className="font-brand text-sm font-semibold text-text-primary">
+                  {p.name}
+                </p>
+                <p
+                  className={`mt-1 text-xs font-medium ${
+                    p.live ? "text-green-400" : "text-text-muted"
+                  }`}
+                >
+                  {p.status}
+                </p>
+              </div>
+
+              {/* Hover tooltip for coming-soon platforms */}
+              {!p.live && hovered === p.name && p.tooltip && (
+                <div className="absolute bottom-full left-1/2 mb-3 w-56 -translate-x-1/2 rounded-xl border border-border/60 bg-elevated p-3 text-xs leading-relaxed text-text-secondary shadow-xl">
+                  {p.tooltip}
+                  <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-elevated" />
+                </div>
+              )}
+            </div>
           ))}
         </div>
-
-        <p className="mt-8 text-center text-xs text-text-muted">
+        <p className="mt-6 text-center text-xs text-text-muted">
           Hover the dimmed platforms to learn more.
         </p>
       </div>
@@ -639,14 +479,21 @@ function Footer() {
   return (
     <footer className="border-t border-border/40 py-24">
       <div className="mx-auto max-w-2xl px-6 text-center md:px-12">
-        <ShieldLogo size={40} />
+        {/* Logo */}
+        <img
+          src="/veil-icon.svg"
+          alt="Veil"
+          width={64}
+          height={64}
+          className="mx-auto rounded-2xl border border-white/35 bg-white/10 p-1 shadow-[0_12px_30px_rgba(0,0,0,0.45)]"
+        />
 
         <h2 className="font-brand mt-6 text-4xl font-bold text-text-primary">
           Be the first to know.
         </h2>
         <p className="mt-3 text-base text-text-secondary">
-          spoilershield is coming to the Chrome Web Store. Drop your email and we&apos;ll
-          notify you the moment it&apos;s live.
+          Veil is coming to the Chrome Web Store soon.
+          Drop your email and we&apos;ll let you know the moment it&apos;s ready.
         </p>
 
         {submitted ? (
@@ -674,7 +521,7 @@ function Footer() {
         )}
 
         <p className="mt-16 text-xs text-text-muted">
-          © 2026 spoilershield · Built for anime fans
+          © 2026 Veil · Built for anime fans
         </p>
       </div>
     </footer>
