@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 
+const CHROME_STORE_URL = process.env.NEXT_PUBLIC_CHROME_STORE_URL ?? "#";
+
 /* ── Panel mockup ─────────────────────────────────────────────── */
 function PanelMockup() {
   return (
@@ -150,9 +152,14 @@ function Nav() {
           Veil
         </span>
       </div>
-      <div className="flex items-center gap-1.5 rounded-full border border-border px-4 py-1.5 text-xs text-text-muted">
-        Coming to Chrome Web Store
-      </div>
+      <a
+        href={CHROME_STORE_URL}
+        target={CHROME_STORE_URL === "#" ? undefined : "_blank"}
+        rel={CHROME_STORE_URL === "#" ? undefined : "noreferrer"}
+        className="flex items-center gap-1.5 rounded-full border border-border px-4 py-1.5 text-xs text-text-muted transition-colors hover:bg-white/5"
+      >
+        Add to Chrome
+      </a>
     </nav>
   );
 }
@@ -205,16 +212,21 @@ function Hero() {
             </p>
 
             <div className="flex items-center gap-3">
-              <button
-                disabled
-                className="flex cursor-not-allowed items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white opacity-60"
+              <a
+                href={CHROME_STORE_URL}
+                target={CHROME_STORE_URL === "#" ? undefined : "_blank"}
+                rel={CHROME_STORE_URL === "#" ? undefined : "noreferrer"}
+                className={`flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 ${
+                  CHROME_STORE_URL === "#"
+                    ? "pointer-events-none opacity-60"
+                    : ""
+                }`}
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M8 2v9M4 7l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 Add to Chrome
-              </button>
-              <span className="text-xs text-text-muted">Coming soon</span>
+              </a>
             </div>
           </div>
 
@@ -468,14 +480,6 @@ function Platforms() {
 
 /* ── Footer / CTA ─────────────────────────────────────────────── */
 function Footer() {
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email.trim()) setSubmitted(true);
-  };
-
   return (
     <footer className="border-t border-border/40 py-24">
       <div className="mx-auto max-w-2xl px-6 text-center md:px-12">
@@ -489,36 +493,26 @@ function Footer() {
         />
 
         <h2 className="font-brand mt-6 text-4xl font-bold text-text-primary">
-          Be the first to know.
+          Add Veil to Chrome.
         </h2>
         <p className="mt-3 text-base text-text-secondary">
-          Veil is coming to the Chrome Web Store soon.
-          Drop your email and we&apos;ll let you know the moment it&apos;s ready.
+          Install Veil from the Chrome Web Store and ask questions without risking spoilers.
         </p>
 
-        {submitted ? (
-          <div className="mt-8 flex items-center justify-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-6 py-3 text-sm font-medium text-accent">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-            You&apos;re on the list — we&apos;ll be in touch!
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="mt-8 flex gap-2">
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              className="flex-1 rounded-full border border-border bg-surface px-5 py-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent/40"
-            />
-            <button
-              type="submit"
-              className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-            >
-              Notify me
-            </button>
-          </form>
-        )}
+        <div className="mt-8 flex justify-center">
+          <a
+            href={CHROME_STORE_URL}
+            target={CHROME_STORE_URL === "#" ? undefined : "_blank"}
+            rel={CHROME_STORE_URL === "#" ? undefined : "noreferrer"}
+            className={`rounded-full bg-accent px-8 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 ${
+              CHROME_STORE_URL === "#"
+                ? "pointer-events-none opacity-60"
+                : ""
+            }`}
+          >
+            Add to Chrome
+          </a>
+        </div>
 
         <p className="mt-16 text-xs text-text-muted">
           © 2026 Veil · Built for anime fans
