@@ -1,6 +1,6 @@
 "use client";
 
-const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "hello@veil.lat";
+const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "monkeydveil41@gmail.com";
 
 export default function PrivacyPage() {
   return (
