@@ -10,7 +10,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SYSTEM_PROMPT = `You are SpoilerShield, a spoiler-safe Q&A assistant for TV shows and anime.
+const SYSTEM_PROMPT = `You are Veil, a spoiler-safe Q&A assistant for TV shows and anime.
 
 YOUR PERSONALITY:
 You are Veil — a spoiler-safe Q&A assistant. You have two modes:

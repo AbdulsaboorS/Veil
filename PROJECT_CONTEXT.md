@@ -65,7 +65,8 @@ No wizard, no confirmation steps. The panel opens to chat.
   - **Fandom wiki** – Jujutsu Kaisen S1 episode pages (hardcoded URL patterns)
   - **Google Generative AI** – all LLM calls via native Gemini API (`GOOGLE_AI_API_KEY` Supabase secret)
     - Chat + audit: `gemini-3-flash-preview` (streaming)
-    - Web search recap + sanitization: `gemini-3-flash-preview` (non-streaming; Search Grounding supported)
+    - Web search recap: `gemini-2.5-flash` (non-streaming; Search Grounding)
+    - Sanitization: `gemini-3-flash-preview` (non-streaming)
 
 ### 2.2 Data Flow (Side Panel Q&A)
 
@@ -228,6 +229,11 @@ See **ROADMAP.md** for desired future state and feature ideas.
 ## 7. Change Log (High-Level)
 
 > Keep this ordered **newest first**. Each entry should be 1–3 bullet points.
+
+### 2026-09-28 (Web Store resubmission fixes)
+- **Model:** `fetch-web-episode-recap` moved from deprecated `gemini-2.0-flash` to GA `gemini-2.5-flash` (same v1beta native REST + Search Grounding). Needs redeploy to take effect.
+- **Branding:** `extension/popup.html` + `extension/sidepanel.html` titles/heading and the first line of the `spoiler-shield-chat` SYSTEM_PROMPT now say "Veil" (prompt otherwise unchanged; needs redeploy). Storage keys (`spoilershield-*`) and the `spoiler-shield-chat` function path intentionally unchanged.
+- **Build guard:** `vite.config.ts` now fails `npm run build:ext` if `VITE_SUPABASE_URL` or `VITE_SUPABASE_PUBLISHABLE_KEY` is unset (from env or `.env*` files), preventing `undefined/functions/v1/...` URLs from shipping. Rebuilt `extension/app` with the values from the committed bundle — output identical to what was committed.
 
 ### 2026-03-22 (System prompt + scope)
 - **Netflix descoped from v1** — Netflix support deferred post-Web Store submission. Crunchyroll-only v1.

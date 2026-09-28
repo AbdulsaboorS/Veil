@@ -115,7 +115,7 @@ spoiler-shield/
 ## 4. Current State (As of Last Session)
 
 - **Deployed:** Backend is Supabase Edge Functions (project ref `dbileyqtnisyqzgwwive`). Frontend hosted on Lovable; local dev via `npm run dev`.
-- **LLM:** All LLM calls use **Google Generative AI native API** (`GOOGLE_AI_API_KEY` Supabase secret). Chat/audit: `gemini-3-flash-preview` (streaming). Web recap + sanitize: `gemini-2.0-flash` (non-streaming, supports Search Grounding). All functions self-contained — no shared module imports.
+- **LLM:** All LLM calls use **Google Generative AI native API** (`GOOGLE_AI_API_KEY` Supabase secret). Chat/audit: `gemini-3-flash-preview` (streaming). Web recap: `gemini-2.5-flash` (non-streaming, Search Grounding). Sanitize: `gemini-3-flash-preview`. All functions self-contained — no shared module imports.
 - **Chat:** Working end-to-end for any show. Streams correctly. Works without episode context (model uses general show knowledge). `useChat.ts` parses `candidates[0].content.parts[0].text`.
 - **UX:** Chat-first side panel. Panel opens directly to chat — no wizard. Sessions per show+episode; history drawer for switching.
 - **Context pipeline:** Five-tier fallback — TVMaze episode (sanitized) → AniList show overview (sanitized) → Fandom (JJK S1) → Gemini web search → model knowledge. Netflix no-episode path uses TVMaze show-level summary directly (bypasses `fetchRecap`).
