@@ -115,13 +115,14 @@ spoiler-shield/
 ## 4. Current State (As of Last Session)
 
 - **Deployed:** Backend is Supabase Edge Functions (project ref `dbileyqtnisyqzgwwive`). Frontend hosted on Lovable; local dev via `npm run dev`.
-- **LLM:** All LLM calls use **Google Generative AI native API** (`GOOGLE_AI_API_KEY` Supabase secret). Chat/audit: `gemini-3-flash-preview` (streaming). Web recap: `gemini-2.5-flash` (non-streaming, Search Grounding). Sanitize: `gemini-3-flash-preview`. All functions self-contained — no shared module imports.
+- **LLM:** All LLM calls use **Google Generative AI native API** (`GOOGLE_AI_API_KEY` Supabase secret), all on `gemini-3-flash-preview`. Chat streams; web recap is non-streaming with Search Grounding. All functions self-contained — no shared module imports.
+  - Note: `gemini-2.5-flash` was tried for the recap function on 2026-09-28 and returned HTTP 404 from the API despite being listed in Google's docs — `gemini-3-flash-preview` was verified working live on this key instead.
 - **Chat:** Working end-to-end for any show. Streams correctly. Works without episode context (model uses general show knowledge). `useChat.ts` parses `candidates[0].content.parts[0].text`.
 - **UX:** Chat-first side panel. Panel opens directly to chat — no wizard. Sessions per show+episode; history drawer for switching.
 - **Context pipeline:** Five-tier fallback — TVMaze episode (sanitized) → AniList show overview (sanitized) → Fandom (JJK S1) → Gemini web search → model knowledge. Netflix no-episode path uses TVMaze show-level summary directly (bypasses `fetchRecap`).
 - **Detection:** `background.js` programmatically injects `content.js` on icon click and `tabs.onUpdated` — works on already-open tabs after extension reload. Netflix episode info is unreliable (player UI only); episode dedup uses URL pathname.
 - **Extension build:** `BUILD_TARGET=extension npm run build` compiles `src/` into `extension/app/assets/index.js`. Must run after any `src/` changes.
-- **Audit pass:** Wired and active on the spoiler-risk path (`classify-question` → `audit-answer`). Both functions must be deployed and responding for this path to execute. `classify-question` deployment status should be confirmed before relying on the audit path in production.
+- **Audit pass:** Intentionally disabled (decision 2026-09-28). The audit call in `useChat.ts` is commented out: it added a sequential non-streaming Gemini round-trip on spoiler-risk questions, fails open (returns the original answer on any error), and reviews with the same model family. Primary protections (parallel `classify-question`, hardened no-leak system prompt, sanitized context, playful refusal) remain. `audit-answer` stays deployed but unused.
 
 ---
 

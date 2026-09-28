@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 // Self-contained: no shared module import.
 // Uses Gemini with Google Search Grounding to find an episode recap.
 // The returned text is raw — callers must pipe it through sanitize-episode-context.
-const GEMINI_MODEL = "gemini-2.5-flash";
+const GEMINI_MODEL = "gemini-3-flash-preview";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 const corsHeaders = {

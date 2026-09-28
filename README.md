@@ -29,7 +29,7 @@ The experience is fully automated. The only thing you need to do is ask.
 ### AI pipeline
 - **Question classification** — each question is classified as `SAFE_BASICS`, `AMBIGUOUS`, or `SPOILER_RISK` in parallel with the chat fetch (no sequential latency penalty).
 - **Safe path** — real SSE streaming directly to the UI. First tokens appear within ~500ms on warm functions.
-- **Spoiler-risk path** — response is collected silently, audited by a second-pass LLM, then animated in via fake-stream. No spoilers leak.
+- **Spoiler-risk path** — risky questions are classified in parallel with generation, the response is collected silently, then animated in via fake-stream under a hardened no-leak system prompt. No spoilers leak.
 - **Four-tier context pipeline** — TVMaze episode summaries → Fandom wiki (JJK S1) → Gemini web search grounding → model knowledge fallback. All recap text is sanitized before use.
 
 ### UI

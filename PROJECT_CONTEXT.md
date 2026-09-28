@@ -57,15 +57,15 @@ No wizard, no confirmation steps. The panel opens to chat.
   - `fetch-web-episode-recap` – Gemini + Google Search Grounding; returns a raw episode recap for any show
   - `fetch-fandom-episode` – fetches + DOM-parses Jujutsu Kaisen Fandom wiki pages
   - `sanitize-episode-context` – LLM pass to strip future spoilers / hindsight from any raw recap text
-  - `audit-answer` – second-pass spoiler audit on completed answers (deployed but **not yet wired into client**)
+  - `audit-answer` – second-pass spoiler audit on completed answers (deployed but **intentionally disabled in the client** — decision 2026-09-28, see "Audit pass" below)
   - `log-spoiler-report` – logs "felt spoilery" reports (console only for now)
 
 - **External APIs**
   - **TVMaze** – show search + episode summaries (free, no key)
   - **Fandom wiki** – Jujutsu Kaisen S1 episode pages (hardcoded URL patterns)
   - **Google Generative AI** – all LLM calls via native Gemini API (`GOOGLE_AI_API_KEY` Supabase secret)
-    - Chat + audit: `gemini-3-flash-preview` (streaming)
-    - Web search recap: `gemini-2.5-flash` (non-streaming; Search Grounding)
+    - Chat + audit + web search recap: `gemini-3-flash-preview` (chat streams; recap non-streaming with Search Grounding)
+      - Note: `gemini-2.5-flash` was tried for the recap function on 2026-09-28 and returned HTTP 404 from the API despite being listed in Google's docs — `gemini-3-flash-preview` was verified working live on this key instead.
     - Sanitization: `gemini-3-flash-preview` (non-streaming)
 
 ### 2.2 Data Flow (Side Panel Q&A)
@@ -210,7 +210,7 @@ supabase functions deploy log-spoiler-report
 
 All previously known bugs are resolved. The product works end-to-end for any show on Crunchyroll or Netflix.
 
-- `audit-answer` is deployed but **not wired into the client** — re-enable after confirming chat stability. Needs the empty-context guard removed (same fix applied to chat in 2026-02-23 session) before it can handle shows without recaps.
+- `audit-answer` is deployed but **intentionally disabled in the client** (decision 2026-09-28). It added a sequential non-streaming Gemini round-trip on spoiler-risk questions, fails open (returns the original answer on any error), and reviews with the same model family, so its safety value was marginal against the latency and cost. Primary protections remain: parallel `classify-question`, hardened no-leak system prompt, sanitized episode context, playful refusal on spoiler-risk.
 
 ### 6.1 Current Limitations
 
@@ -218,7 +218,7 @@ All previously known bugs are resolved. The product works end-to-end for any sho
 - **Fandom coverage**: Still hardcoded to Jujutsu Kaisen S1. Web search covers the gap for other shows.
 - **Detection drift**: Content.js relies on DOM patterns that may change with Crunchyroll/Netflix updates.
 - **`needs-episode` with no showId**: If TVMaze lookup fails entirely, `EpisodePicker` can't render (requires a showId). Fallback: show manual season/episode text inputs. Low priority.
-- **Audit pass**: `audit-answer` function exists and is deployed but is not called from `useChat.ts`. Re-enabling it requires: (1) removing its empty-context 400 guard, (2) wiring it after streaming completes.
+- **Audit pass**: `audit-answer` function exists and is deployed but is intentionally not called from `useChat.ts` (decision 2026-09-28 — latency cost with marginal, fail-open safety gain).
 
 ### 6.2 Future Vision
 
